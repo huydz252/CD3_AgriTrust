@@ -1,7 +1,6 @@
 const getContract = require('../config/blockchain');
 
 const productController = {
-    // 1. Lấy tên dự án
     getProjectName: async (req, res) => {
         try {
             const contract = await getContract();
@@ -12,7 +11,6 @@ const productController = {
         }
     },
 
-    // 2. Lấy toàn bộ sản phẩm (ID, Name, Origin, Status)
     getAllProducts: async (req, res) => {
         try {
             const contract = await getContract();
@@ -34,17 +32,17 @@ const productController = {
         }
     },
 
-    // 3. Tạo sản phẩm mới (Nhận 3 tham số: id, name, origin)
     createProduct: async (req, res) => {
         try {
-            const { id, name, origin } = req.query;
+            const { id, name, origin, status } = req.body;
             const contract = await getContract(); // Phải có dòng này
             
             // Gọi hàm createProduct(id, name, origin) theo .sol mới
             const tx = await contract.createProduct(
-                id, 
+                Number(id), 
                 name, 
-                origin || "Chưa xác định"
+                origin || "Chưa xác định",
+                Number(status)
             );
             
             await tx.wait(); // Đợi block xác nhận
@@ -59,23 +57,31 @@ const productController = {
         }
     },
 
-    // 4. Lấy lịch sử chi tiết (Thêm trường Description)
     getProductHistory: async (req, res) => {
         try {
-            const { id } = req.query;
+            const id  = req.params.id;
             const contract = await getContract();
             const history = await contract.getHistory(id);
+
+            const productDetail = await contract.getProductDetail(id)
             
-            const formatted = history.map(h => ({
-                status: Number(h.status),       // Dùng tên thuộc tính thay cho h[0] nếu dùng JSON ABI
-                location: h.location,           // h[1]
-                description: h.description,     // h[2] - Trường mới thêm
-                timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString(), // Format ngày tháng cho đẹp
-                performer: h.performer          // h[4]
-            }));
+            const formattedTimeline = history.map(h => ({
+            status: Number(h.status),
+            location: h.location,
+            description: h.description,
+            // Format ngày tháng theo giờ Việt Nam
+            timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'), 
+            performer: h.performer
+        }));
+
+        
             
-            res.json({ success: true, id, timeline: formatted });
+        res.render('productHistory', { 
+            product: productDetail, 
+            list: formattedTimeline 
+        });
         } catch (error) {
+            console.error("Lỗi Controller:", error);
             res.status(500).json({ success: false, error: error.message });
         }
     }
