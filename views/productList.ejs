@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Roots Traceability - Danh sách sản phẩm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar { background-color: #27ae60 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .table thead { background-color: #f1f3f5; }
+        .badge-status { font-weight: 500; padding: 0.5em 0.8em; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">🌿 Roots Project - Blockchain Traceability</span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="text-dark">Danh sách sản phẩm</h2>
+            <button class="btn btn-success rounded-pill px-4" onclick="location.reload()"> làm mới dữ liệu</button>
+        </div>
+
+        <div class="card p-4">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Nguồn gốc</th>
+                            <th>Trạng thái hiện tại</th>
+                            <th class="text-center">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (typeof list !== 'undefined' && list.length > 0) { %>
+                            <% list.forEach(function(p) { %>
+                                <tr>
+                                    <td><span class="badge bg-secondary">#<%= p.id %></span></td>
+                                    <td class="fw-bold"><%= p.name %></td>
+                                    <td><i class="bi bi-geo-alt"></i> <%= p.origin %></td>
+                                    <td>
+                                        <span class="badge badge-status <%= getStatusClass(p.status) %>">
+                                            <%= getStatusName(p.status) %>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a href="/api/history?id=<%= p.id %>" class="btn btn-sm btn-outline-primary">
+                                            Chi tiết lịch sử
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    Chưa có sản phẩm nào được lưu trên Blockchain.
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <% 
+    // Các hàm Helper xử lý logic hiển thị ngay tại Server
+    function getStatusName(status) {
+        const statuses = ["Đang trồng", "Đã thu hoạch", "Đang vận chuyển", "Sẵn sàng bán", "Đã bán"];
+        return statuses[status] || "Không xác định";
+    }
+
+    function getStatusClass(status) {
+        const classes = ["bg-info text-dark", "bg-warning text-dark", "bg-primary", "bg-success", "bg-dark"];
+        return classes[status] || "bg-light text-dark";
+    }
+    %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
