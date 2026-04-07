@@ -1,5 +1,6 @@
 const getContract = require('../config/blockchain');
 const QRCode = require('qrcode')
+const ADMIN_WALLET = process.env.ADMIN_WALLET
 
 const productController = {
     getProjectName: async (req, res) => {
@@ -19,17 +20,17 @@ const productController = {
             const contract = await getContract();
             // Gọi hàm mới trong file .sol Final
             const products = await contract.getAllProducts();
-            
+
+            const adminAddress = process.env.ADMIN_WALLET;
+
             const result = products.map(p => ({
                 id: p.id.toString(),
                 name: p.name,
                 origin: p.origin,
                 status: Number(p.currentStatus),
-                exists: p.exists
+                exists: p.exists,
             }));
-            
-            //res.json({ success: true, total: formatted.length, data: formatted });
-            res.render('productList', {list: result});
+            res.render('productList', {list: result, adminAddress: adminAddress}  );
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
@@ -66,14 +67,14 @@ const productController = {
             status: Number(h.status),
             location: h.location,
             description: h.description,
-            // Format ngày tháng theo giờ Việt Nam
             timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'), 
             performer: h.performer
             
         }));
 
+        const adminAddress = process.env.ADMIN_WALLET;
+
         //qr
-        const protocol = req.protocol;
         const myIP = "192.168.1.16";
         const qrUrl = `http://${myIP}:3000/api/history/${id}`;
         // Tạo mã QR dạng chuỗi ảnh (Data URL)
@@ -82,7 +83,9 @@ const productController = {
         res.render('productHistory', { 
             product: productDetail, 
             list: formattedTimeline,
-            qrCode: qrImage
+            qrCode: qrImage,
+            adminAddress: adminAddress,
+            isAdmin: true
         });
         } catch (error) {
             console.error("Lỗi Controller:", error);
@@ -90,23 +93,6 @@ const productController = {
         }
     },
 
-    updateStage: async (req, res) => {
-        try {
-            const {id, status, location, description} = req.body
-            const contract = await getContract();
-            const addStage = await contract.addStage(
-                Number(id), 
-                Number(status), 
-                location, 
-                description
-            )
-            await addStage.wait();
-            res.redirect(`/api/history/${id}`);
-        } catch (error) {
-            console.log("Lỗi controller", error)
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
 
 };
 

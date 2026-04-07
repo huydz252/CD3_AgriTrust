@@ -7,7 +7,7 @@ router.get('/info', productController.getProjectName)
 router.get('/products', productController.getAllProducts)
 router.post('/createProduct', productController.createProduct);
 router.get('/history/:id', productController.getProductHistory);
-router.post('/updateStage', productController.updateStage);
+//router.post('/updateStage', productController.updateStage);
 
 
 

@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const productRouter = require("./src/route/productRoutes.js")
 const path = require("path")
