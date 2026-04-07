@@ -11,7 +11,7 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, './src/views'));
 
 app.use("/api", productRouter)
-app.get("/", (req, res)=> res.redirect("/api/info") )
+app.get("/", (req, res)=> res.redirect("/api/products") )
 
 
 app.listen(3000, () => console.log("Server chạy tại http://localhost:3000"));
