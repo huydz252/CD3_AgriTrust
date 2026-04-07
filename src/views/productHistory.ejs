@@ -91,9 +91,58 @@
                 </button>
             </div>
 
+            
+            <!-- form update status  -->
+            <div class="text-center my-3 ">
+                <button class="btn btn-primary rounded-pill" data-bs-toggle="modal" data-bs-target="#modalUpdate">
+                    <i class="bi bi-plus-circle"></i> Cập nhật giai đoạn mới
+                </button>
+            </div>
+
+            <div class="modal fade" id="modalUpdate" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">Cập nhật hành trình cho #<%= product.id %></h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="/api/updateStage" method="POST">
+                            <div class="modal-body p-4">
+                                <input type="hidden" name="id" value="<%= product.id %>">
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Trạng thái tiếp theo</label>
+                                    <select name="status" class="form-select" required>
+                                        <option value="1">🧺 Thu hoạch</option>
+                                        <option value="2">🚚 Vận chuyển</option>
+                                        <option value="3">📦 Sẵn sàng bán (Vào kho)</option>
+                                        <option value="4">✅ Đã bán hết / Hoàn tất</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Vị trí hiện tại</label>
+                                    <input type="text" name="location" class="form-control" placeholder="VD: Cửa hàng VinMart, Quận 1" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Mô tả hoạt động</label>
+                                    <textarea name="description" class="form-control" rows="3" placeholder="VD: Sản phẩm đã được đóng gói và kiểm định chất lượng đầu vào." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                <button type="submit" class="btn btn-primary px-4">Xác nhận cập nhật</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+
 
 <% 
 // Helper functions trực tiếp trong EJS

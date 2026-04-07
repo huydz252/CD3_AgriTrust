@@ -11,6 +11,8 @@ const productController = {
         }
     },
 
+    
+
     getAllProducts: async (req, res) => {
         try {
             const contract = await getContract();
@@ -46,12 +48,7 @@ const productController = {
             );
             
             await tx.wait(); // Đợi block xác nhận
-            
-            res.json({ 
-                success: true, 
-                message: `Đã tạo sản phẩm ${name} thành công!`,
-                transactionHash: tx.hash 
-            });
+            res.redirect("/api/products")
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
@@ -84,7 +81,26 @@ const productController = {
             console.error("Lỗi Controller:", error);
             res.status(500).json({ success: false, error: error.message });
         }
-    }
+    },
+
+    updateStage: async (req, res) => {
+        try {
+            const {id, status, location, description} = req.body
+            const contract = await getContract();
+            const addStage = await contract.addStage(
+                Number(id), 
+                Number(status), 
+                location, 
+                description
+            )
+            await addStage.wait();
+            res.redirect(`/api/history/${id}`);
+        } catch (error) {
+            console.log("Lỗi controller", error)
+            res.status(500).json({ success: false, error: error.message });
+        }
+    },
+
 };
 
 module.exports = productController;
