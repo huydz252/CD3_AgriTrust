@@ -1,5 +1,5 @@
 const { ethers } = require("ethers");
-const contractABI = require("./contraceABI.json"); 
+const contractABI = require("./contractABI.json"); 
 const contractAddress = "0xa756f1a1a4D30880491916c7644E28Fd36568ADe"; 
 
 // Kết nối Ganache
