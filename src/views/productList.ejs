@@ -2,164 +2,147 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Roots Traceability - Admin Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriTrust - Danh sách sản phẩm</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/style.css">
     <style>
-        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .navbar { background-color: #27ae60 !important; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .card { border: none; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .table thead { background-color: #f1f3f5; }
-        .badge-status { font-weight: 500; padding: 0.5em 0.8em; }
-        /* Hiệu ứng loading cho nút */
-        .btn-loading { pointer-events: none; opacity: 0.7; }
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', sans-serif; }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand mb-0 h1">🌿 Roots Project - Blockchain Traceability</span>
+
+    <nav class="navbar navbar-dark py-3 mb-5">
+        <div class="container d-flex justify-content-between">
+            <a class="navbar-brand fw-bold fs-3" href="#">
+                <i class="bi bi-leaf-fill"></i> AgriTrust
+            </a>
+            <div class="text-white d-none d-md-block">
+                <small class="opacity-75">Admin Wallet:</small>
+                <code class="text-warning fw-bold"><%= adminAddress.substring(0,6) %>...<%= adminAddress.substring(38) %></code>
+            </div>
         </div>
     </nav>
 
     <div class="container">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-dark">Danh sách sản phẩm</h2>
-            <div>
-                <button id="btnOpenModal" class="btn btn-primary rounded-pill px-4 me-2" style="display: none;" data-bs-toggle="modal" data-bs-target="#modalAddProduct">
-                    <i class="bi bi-plus-circle"></i> Thêm sản phẩm
-                </button>
-                <button class="btn btn-success rounded-pill px-4" onclick="location.reload()">
-                    <i class="bi bi-arrow-clockwise"></i> Làm mới
-                </button>
-            </div>
+            <h2 class="fw-bold text-dark">Sản phẩm đang quản lý</h2>
+            <span class="badge bg-dark text-white p-2 px-3"><%= list.length %> Sản phẩm</span>
         </div>
 
-        <div class="card p-4">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Tên sản phẩm</th>
-                            <th>Nguồn gốc</th>
-                            <th>Trạng thái hiện tại</th>
-                            <th class="text-center">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (typeof list !== 'undefined' && list.length > 0) { %>
-                            <% list.forEach(function(p) { %>
-                                <tr>
-                                    <td><span class="badge bg-secondary">#<%= p.id %></span></td>
-                                    <td class="fw-bold text-success"><%= p.name %></td>
-                                    <td><i class="bi bi-geo-alt-fill text-danger"></i> <%= p.origin %></td>
-                                    <td>
-                                        <span class="badge badge-status <%= getStatusClass(p.status) %>">
-                                            <%= getStatusName(p.status) %>
-                                        </span>
-                                    </td>
-                                    
-                                    <td class="text-center">
-                                        <a href="/api/history/<%= p.id %>" class="btn btn-sm btn-outline-primary rounded-pill">
-                                            Chi tiết lịch sử
-                                        </a>
-                                    </td>
-                                </tr>
-                            <% }); %>
-                        <% } else { %>
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-box-seam d-block fs-1 mb-2"></i>
-                                    Chưa có sản phẩm nào được lưu trên Blockchain.
-                                </td>
-                            </tr>
-                        <% } %>
-                    </tbody>
-                </table>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            <% list.forEach(p => { %>
+            <div class="col">
+                <div class="card product-card h-100 shadow-sm position-relative">
+                    <span class="badge badge-status <%= getStatusClass(p.status) %> shadow-sm">
+                        <%= getStatusName(p.status) %>
+                    </span>
+
+                    <img src="<%= p.image %>" class="card-img-top product-img" alt="<%= p.name %>" onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
+
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h4 class="card-title fw-bold mb-0 text-truncate" style="max-width: 70%;"><%= p.name %></h4>
+                            <span class="text-muted small">#<%= p.id %></span>
+                        </div>
+                        
+                        <p class="text-muted mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> <%= p.origin %></p>
+                        
+                        <div class="price-tag mb-3">
+                            <%= typeof p.price === 'number' ? p.price.toLocaleString('vi-VN') : p.price %> <small>VNĐ</small>
+                        </div>
+
+                        <p class="card-text text-secondary mb-4" style="display: -webkit-box;
+                                                                        -webkit-line-clamp: 1; /* Giới hạn đúng 1 dòng */
+                                                                        -webkit-box-orient: vertical;
+                                                                        overflow: hidden;
+                                                                        text-overflow: ellipsis;
+                                                                        height: 1.5em; /* Cố định chiều cao để card luôn bằng nhau */">
+                        <%= p.description && p.description !== "Không tìm thấy mô tả sản phẩm" ? p.description : "Chưa có mô tả chi tiết." %>
+                        </p>
+
+                        <div class="d-grid">
+                            <a href="/api/history/<%= p.id %>" class="btn btn-trace fw-bold py-2">
+                                <i class="bi bi-shield-check-fill me-2"></i> Truy xuất nguồn gốc
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
+            <% }) %>
         </div>
     </div>
 
+    <button class="btn btn-success add-btn border-0" data-bs-toggle="modal" data-bs-target="#modalCreate">
+        <i class="bi bi-plus-lg"></i>
+    </button>
 
-    <!-- modal thêm sản phẩm -->
-    <div class="modal fade" id="modalAddProduct" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="bi bi-node-plus"></i> Khởi tạo sản phẩm trên Blockchain</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal fade" id="modalCreate" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="fw-bold text-success">Thêm nông sản mới</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/api/createProduct" method="POST" id="formCreateProduct">
+                    <div class="modal-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Mã ID (Blockchain)</label>
+                                <input type="number" name="id" class="form-control rounded-pill" placeholder="Ví dụ: 101" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold small">Giá bán (VNĐ)</label>
+                                <input type="number" name="price" class="form-control rounded-pill" placeholder="55000" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Tên sản phẩm</label>
+                                <input type="text" name="name" class="form-control rounded-pill" placeholder="Táo Gia Lai..." required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Nguồn gốc</label>
+                                <input type="text" name="origin" class="form-control rounded-pill" placeholder="Vườn sạch A, Gia Lai">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Link hình ảnh</label>
+                                <input type="text" name="image_url" class="form-control rounded-pill" placeholder="/images/tao.jpg">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small">Mô tả chi tiết</label>
+                                <textarea name="description" class="form-control" rows="3" style="border-radius: 15px;" placeholder="Thông tin về quy trình trồng..."></textarea>
+                            </div>
+                            <input type="hidden" name="status" value="0"> </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-success rounded-pill px-4" id="btnSubmit">Ký & Lưu hệ thống</button>
+                    </div>
+                </form>
             </div>
-            <form action="/api/createProduct" method="POST" id="formCreateProduct">
-                <div class="modal-body p-4">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">ID sản phẩm (Số duy nhất)</label>
-                        <input type="number" name="id" class="form-control" placeholder="VD: 101" required>
-                        <div class="form-text">ID dùng để định danh duy nhất trên sổ cái Blockchain.</div>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Tên sản phẩm</label>
-                        <input type="text" name="name" class="form-control" placeholder="VD: Táo Ninh Thuận" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Nguồn gốc xuất xứ</label>
-                        <input type="text" name="origin" class="form-control" placeholder="VD: Phan Rang, Ninh Thuận" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label fw-bold text-primary">Trạng thái khởi tạo</label>
-                        <select name="status" class="form-select border-primary" required>
-                            <option value="0" selected>🌱 Đang trồng / Nuôi dưỡng</option>
-                            <option value="1">🧺 Đã thu hoạch</option>
-                            <option value="2">🚚 Đang vận chuyển</option>
-                            <option value="3">📦 Sẵn sàng bán (Còn trong kho)</option>
-                            <option value="4">✅ Đã bán hết/ Hoàn tất</option>
-                        </select>
-                        <div class="form-text">Sản phẩm sẽ bắt đầu lịch sử tại giai đoạn này.</div>
-                    </div>
-                </div>
-
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary rounded-pill px-4" id="btnSubmit">
-                        Xác nhận ghi vào Blockchain
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 
     <% 
     function getStatusName(status) {
-        const statuses = ["Đang trồng", "Đã thu hoạch", "Đang vận chuyển", "Sẵn sàng bán", "Đã bán hết"];
+        const statuses = ["Đang trồng", "Đã thu hoạch", "Đang vận chuyển", "Sẵn sàng bán", "Đã bán"];
         return statuses[status] || "Không xác định";
     }
 
     function getStatusClass(status) {
-        const classes = ["bg-info text-dark", "bg-warning text-dark", "bg-primary", "bg-success", "bg-dark"];
-        return classes[status] || "bg-light text-dark";
+        const classes = ["bg-info text-dark", "bg-warning text-dark", "bg-primary text-white", "bg-success text-white", "bg-dark text-white"];
+        return classes[status] || "bg-secondary";
     }
     %>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Xử lý hiệu ứng khi nhấn Submit (để tránh Admin bấm nhiều lần khi Blockchain đang xử lý)
         const form = document.getElementById('formCreateProduct');
         const btn = document.getElementById('btnSubmit');
-
-        form.addEventListener('submit', function() {
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
-            btn.classList.add('btn-loading');
+        form.addEventListener('submit', () => {
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang ký Blockchain...';
+            btn.disabled = true;
         });
     </script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-
-    <input type="hidden" id="adminAddr" value="<%= adminAddress %>">
-
-    <script src="/js/web3-handler.js"></script>
-</body> 
+</body>
 </html>
