@@ -39,9 +39,9 @@ const productController = {
     createProduct: async (req, res) => {
         try {
             const { id, name, origin, status } = req.body;
-            const contract = await getContract(); // Phải có dòng này
+
+            const contract = await getContract(); 
             
-            // Gọi hàm createProduct(id, name, origin) theo .sol mới
             const tx = await contract.createProduct(
                 Number(id), 
                 name, 
@@ -49,7 +49,8 @@ const productController = {
                 Number(status)
             );
             
-            await tx.wait(); // Đợi block xác nhận
+            await tx.wait(); 
+
             res.redirect("/api/products")
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
@@ -75,7 +76,7 @@ const productController = {
         const adminAddress = process.env.ADMIN_WALLET;
 
         //qr
-        const myIP = "192.168.1.16";
+        const myIP = "172.25.13.236";
         const qrUrl = `http://${myIP}:3000/api/history/${id}`;
         // Tạo mã QR dạng chuỗi ảnh (Data URL)
         const qrImage = await QRCode.toDataURL(qrUrl);
