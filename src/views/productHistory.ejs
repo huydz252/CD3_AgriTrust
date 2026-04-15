@@ -7,128 +7,157 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        @media print { .no-print { display: none !important; } }
+    </style>
 </head>
 <body>
 
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-lg-8">
+        <div class="col-lg-9">
             
-            <div class="card main-card mb-4">
-                <div class="card-header-custom p-4 text-center">
-                    <h2 class="fw-bold mb-1"><%= product.name %></h2>
-                    <p class="mb-0 opacity-75">Mã lô hàng: #<%= product.id %></p>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-9 border-end-md">
-                            <div class="d-flex justify-content-center align-items-center gap-4">
-                                <div class="text-center">
-                                    <small class="text-muted d-block text-uppercase mb-1" style="font-size: 10px; letter-spacing: 1px;">Nguồn gốc</small>
-                                    <div class="fw-bold text-dark"><i class="bi bi-geo-alt-fill text-danger"></i> <%= product.origin %></div>
+            <div class="card main-card mb-4 bg-white shadow-sm">
+                <div class="row g-0">
+                    <div class="col-md-5">
+                        <img src="<%= product.image %>" class="product-header-img" alt="<%= product.name %>" onerror="this.src='/images/system/default.jpg'">
+                    </div>
+                    <div class="col-md-7">
+                        <div class="card-body p-4 p-lg-5">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h1 class="fw-bold text-success mb-1"><%= product.name %></h1>
+                                    <p class="text-muted">Mã định danh: <span class="badge bg-dark">#<%= product.id %></span></p>
                                 </div>
-                                <div class="vr opacity-25" style="height: 40px;"></div>
-                                <div class="text-center">
-                                    <small class="text-muted d-block text-uppercase mb-1" style="font-size: 10px; letter-spacing: 1px;">Trạng thái</small>
-                                    <span class="badge <%= getStatusClass(product.currentStatus) %> px-3 py-2 rounded-pill shadow-sm">
+                                <div class="qr-card text-center shadow-sm no-print">
+                                    <img src="<%= qrCode %>" alt="QR Code" style="width: 80px; height: 80px;">
+                                    <div style="font-size: 9px;" class="text-muted mt-2 fw-bold text-uppercase">QUÉT XÁC THỰC</div>
+                                </div>
+                            </div>
+                            
+                            <hr class="my-4 opacity-25">
+                            <p class="text-secondary mb-4 fst-italic"><%= product.fullDescription %></p>
+
+                            <div class="row g-3">
+                                <div class="col-6 col-md-4">
+                                    <small class="text-muted d-block text-uppercase small fw-bold">Nguồn gốc</small>
+                                    <div class="fw-bold"><i class="bi bi-geo-alt-fill text-danger"></i> <%= product.origin %></div>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <small class="text-muted d-block text-uppercase small fw-bold">Trạng thái</small>
+                                    <span class="badge <%= getStatusClass(product.currentStatus) %> px-3 py-2 rounded-pill shadow-sm mt-1">
                                         <%= getStatusName(product.currentStatus) %>
                                     </span>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-center text-md-end mt-3 mt-md-0">
-                            <div class="d-inline-block bg-white p-2 rounded shadow-sm border">
-                                <img src="<%= qrCode %>" alt="QR Code" style="width: 75px; height: 75px;">
-                                <div style="font-size: 8px;" class="text-muted mt-1 text-uppercase fw-bold">Xác thực QR</div>
+                                <div class="col-12 col-md-4">
+                                    <small class="text-muted d-block text-uppercase small fw-bold">Giá niêm yết</small>
+                                    <div class="fw-bold text-primary fs-5"><%= Number(product.price).toLocaleString('vi-VN') %> VNĐ</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <% if (isAdmin) { %>
                 <div class="text-center mb-4 no-print">
-                    <button id="btnOpenModal" class="btn btn-primary rounded-pill px-4 shadow-sm" style="display: none;" data-bs-toggle="modal" data-bs-target="#modalUpdate">
-                        <i class="bi bi-plus-circle"></i> Cập nhật giai đoạn mới
+                    <button class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalUpdate">
+                        <i class="bi bi-plus-circle-fill me-2"></i> Cập nhật giai đoạn mới
                     </button>
                 </div>
             <% } %> 
-            <div class="card main-card p-4">
-                <h4 class="fw-bold mb-4 text-success"><i class="bi bi-shield-check"></i> Nhật ký Blockchain</h4>
+            
+            <div class="card main-card p-4 p-lg-5 bg-white shadow-sm">
+                <h4 class="fw-bold mb-5 text-dark d-flex align-items-center">
+                    <i class="bi bi-shield-check-fill text-success fs-2 me-3"></i> 
+                    Lịch sử hành trình Blockchain
+                </h4>
+                
                 <div class="timeline">
                     <% if (list && list.length > 0) { %>
                         <% list.forEach(function(item) { %>
                             <div class="timeline-item">
-                                <div class="timeline-dot"></div>
-                                <div class="d-flex justify-content-between align-items-start">
+                                <div class="timeline-dot shadow-sm"></div>
+                                <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div>
-                                        <h5 class="fw-bold text-dark mb-1"><%= getStatusName(item.status) %></h5>
-                                        <div class="small text-primary"><i class="bi bi-pin-map-fill"></i> <%= item.location %></div>
+                                        <h5 class="fw-bold text-dark mb-0"><%= getStatusName(item.status) %></h5>
+                                        <div class="small text-primary mt-1"><i class="bi bi-geo-alt-fill"></i> <%= item.location %></div>
                                     </div>
-                                    <small class="text-muted"><%= item.timestamp %></small>
+                                    <span class="badge bg-light text-muted border px-3"><%= item.timestamp %></span>
                                 </div>
                                 
-                                <div class="description-box shadow-sm">
-                                    <i class="bi bi-info-circle me-1"></i> <%= item.description %>
+                                <div class="description-box shadow-sm mb-3">
+                                    <i class="bi bi-info-circle-fill text-success me-2"></i> 
+                                    <span class="text-dark"><%= item.description %></span>
                                 </div>
 
-                                <div class="tx-hash">
-                                    <i class="bi bi-person-badge"></i> Xác thực: <%= item.performer %>
+                                <div class="small text-muted">
+                                    <i class="bi bi-person-check-fill"></i> Ký xác thực bởi:
+                                    <code class="text-primary"><%= item.performer %></code>
                                 </div>
                             </div>
                         <% }); %>
                     <% } else { %>
-                        <p class="text-center text-muted py-4">Chưa có dữ liệu lịch sử.</p>
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-slash-circle fs-1"></i>
+                            <p class="mt-2">Chưa có dữ liệu lịch sử được ghi nhận trên chuỗi.</p>
+                        </div>
                     <% } %>
                 </div>
             </div>
 
-            <div class="text-center mt-4 no-print">
-                <a href="/api/products" class="btn btn-link text-secondary text-decoration-none small">Quay lại danh sách</a>
-                <button class="btn btn-outline-dark btn-sm rounded-pill px-3 ms-2" onclick="window.print()">
-                    <i class="bi bi-printer"></i> In báo cáo
+            <div class="text-center mt-5 no-print">
+                <a href="/api/products" class="btn btn-outline-secondary rounded-pill px-4 me-2">
+                    <i class="bi bi-arrow-left"></i> Quay lại
+                </a>
+                <button class="btn btn-dark rounded-pill px-4" onclick="window.print()">
+                    <i class="bi bi-printer"></i> In báo cáo xác thực
                 </button>
             </div>
-
-        </div> </div>
+        </div> 
+    </div>
 </div>
+
 <% if (isAdmin) { %>
 <div class="modal fade" id="modalUpdate" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Cập nhật Stage</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            <div class="modal-header bg-success text-white border-0 py-4">
+                <h5 class="modal-title fw-bold"><i class="bi bi-node-plus-fill me-2"></i> Ký xác nhận Giai đoạn mới</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
                 <input type="hidden" name="id" value="<%= product.id %>">
+                
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Trạng thái mới</label>
-                    <select name="status" class="form-select">
-                        <option value="1">🧺 Thu hoạch</option>
-                        <option value="2">🚚 Vận chuyển</option>
-                        <option value="3">📦 Sẵn sàng bán</option>
-                        <option value="4">✅ Đã bán</option>
+                    <label class="form-label fw-bold">Trạng thái tiếp theo</label>
+                    <select name="status" class="form-select rounded-pill shadow-sm">
+                        <option value="1">🧺 Đã thu hoạch</option>
+                        <option value="2">🚚 Đang vận chuyển</option>
+                        <option value="3">📦 Sẵn sàng bán (Kho)</option>
+                        <option value="4">✅ Đã bán lẻ</option>
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Địa điểm</label>
-                    <input type="text" name="location" class="form-control" placeholder="Nhập vị trí...">
+                    <label class="form-label fw-bold">Vị trí cập nhật</label>
+                    <input type="text" name="location" class="form-control rounded-pill shadow-sm" placeholder="VD: Kho trung chuyển Gia Lai">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Ghi chú</label>
-                    <textarea name="description" class="form-control" rows="2"></textarea>
+                    <label class="form-label fw-bold">Ghi chú nhật ký</label>
+                    <textarea name="description" class="form-control shadow-sm" rows="3" style="border-radius: 15px;" placeholder="Mô tả chi tiết hoạt động..."></textarea>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" id="btnConfirmUpdate" class="btn btn-primary px-4" onclick="updateStageOnChain()">
-                    Ký và Xác nhận
+            <div class="modal-footer border-0 pb-4 justify-content-center">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+                <button type="button" id="btnConfirmUpdate" class="btn btn-success rounded-pill px-5 shadow" onclick="updateStageOnChain()">
+                    <i class="bi bi-pen-fill me-2"></i> Ký tên & Xác nhận
                 </button>
             </div>
         </div>
     </div>
 </div>
 <% } %> 
+
 <input type="hidden" id="adminAddr" value="<%= adminAddress %>">
 
 <% 
@@ -137,15 +166,13 @@ function getStatusName(status) {
     return statuses[status] || "Không xác định";
 }
 function getStatusClass(status) {
-    const classes = ["bg-info text-dark", "bg-warning text-dark", "bg-primary", "bg-success", "bg-dark"];
+    const classes = ["bg-info text-dark", "bg-warning text-dark", "bg-primary text-white", "bg-success text-white", "bg-dark text-white"];
     return classes[status] || "bg-secondary";
 }
 %>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-
 <script src="/js/web3-handler.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

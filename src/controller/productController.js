@@ -4,16 +4,6 @@ const QRCode = require('qrcode')
 const ADMIN_WALLET = process.env.ADMIN_WALLET
 
 const productController = {
-    getProjectName: async (req, res) => {
-        try {
-            const contract = await getContract();
-            const name = await contract.name();
-            res.json({ success: true, name });
-        } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
-        }
-    },
-
 
     getAllProducts: async (req, res) => {
         try {
@@ -45,14 +35,14 @@ const productController = {
 
     createProduct: async (req, res) => {
         try {
-            const { id, name, origin, status, price, image_url } = req.body;
+            const { id, name, origin, status, price, image_url, description} = req.body;
             const contract = await getContract(); 
         
             const tx = await contract.createProduct(Number(id), name, origin || "Chưa xác định", Number(status));
             await tx.wait(); 
             await db.query(
-                'INSERT INTO products (name, price, image_url, blockchain_id) VALUES (?, ?, ?, ?)',
-                [name, price, image_url, id]
+                'INSERT INTO products (name, price, image_url, description, blockchain_id) VALUES (?, ?, ?, ?, ?)',
+                [name, price, image_url, description, id]
             );
 
             res.redirect("/api/products");
@@ -117,6 +107,21 @@ const productController = {
             });
         }
     },
+
+    syncStatusWithMySQL: async (req, res) => {
+    try {
+        const { id, status } = req.body;
+        
+        // Cập nhật trạng thái mới nhất vào MySQL dựa trên blockchain_id
+        const sql = 'UPDATE products SET status = ? WHERE blockchain_id = ?';
+        await db.query(sql, [status, id]);
+
+        res.json({ success: true, message: "Đồng bộ thành công" });
+    } catch (error) {
+        console.error("Lỗi đồng bộ MySQL:", error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+},
 
 
 };

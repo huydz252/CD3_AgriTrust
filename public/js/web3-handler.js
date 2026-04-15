@@ -312,13 +312,13 @@ const CONTRACT_ABI =
                     ]
 
 async function updateStageOnChain() {
-    // 1. Lấy dữ liệu từ các thẻ input trong Modal
+    // Lấy dữ liệu từ các thẻ input trong Modal
     const id = document.querySelector('input[name="id"]').value;
     const status = document.querySelector('select[name="status"]').value;
     const location = document.querySelector('input[name="location"]').value;
     const description = document.querySelector('textarea[name="description"]').value;
 
-    // 2. Kiểm tra ví điện tử (MetaMask)
+    // Kiểm tra ví điện tử (MetaMask)
     if (typeof window.ethereum === 'undefined') {
         alert("Không tìm thấy ví Web3! Vui lòng dùng trình duyệt MetaMask để cập nhật.");
         return;
@@ -329,8 +329,6 @@ async function updateStageOnChain() {
     try {
         btn.disabled = true;
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kiểm tra mạng...';
-
-        // --- 3. LOGIC ÉP CHUYỂN SANG MẠNG ROOTS (Chain ID: 1337) ---
         const targetChainIdHex = '0x539'; // 1337 chuyển sang dạng Hex là 0x539
         
         try {
@@ -353,14 +351,14 @@ async function updateStageOnChain() {
 
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang kết nối ví...';
 
-        // 4. Khởi tạo Provider và Signer (Ethers v6)
+        // Khởi tạo Provider và Signer (Ethers v6)
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         
-        // 5. Kết nối Contract
+        // Kết nối Contract
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-        // 6. Gửi giao dịch
+        // Gửi giao dịch
         console.log("Đang gửi giao dịch lên Blockchain...");
         const tx = await contract.addStage(
         Number(id), 
@@ -368,8 +366,6 @@ async function updateStageOnChain() {
         location, 
         description,
         {
-            // ÉP DÙNG GAS PRICE TRUYỀN THỐNG
-            // Cách này sẽ bỏ qua maxFeePerGas và giúp Ganache hiểu ngay lập tức
             gasPrice: ethers.parseUnits('20', 'gwei'), 
             gasLimit: 500000 
         }
@@ -405,7 +401,7 @@ async function checkRole() {
         
         if (accounts.length > 0) {
             const currentAccount = accounts[0].toLowerCase();
-            const adminAddr = document.getElementById('adminAddr').value.toLowerCase().trim(); // Thêm .trim() để bỏ khoảng trắng
+            const adminAddr = document.getElementById('adminAddr').value.toLowerCase().trim();
             
             //check địa chỉ (f12)
             console.log("Ví MetaMask:", currentAccount);
