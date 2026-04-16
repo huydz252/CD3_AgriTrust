@@ -1,5 +1,5 @@
-const db = require('../../db'); 
-const getContract = require('../config/blockchain');
+const db = require('../../../db'); 
+const getContract = require('../../config/blockchain/blockchain');
 const QRCode = require('qrcode')
 const ADMIN_WALLET = process.env.ADMIN_WALLET
 
@@ -27,7 +27,7 @@ const productController = {
                     description: extraInfo ? extraInfo.description : "Không tìm thấy mô tả sản phẩm"
                 }
             })
-            res.render('productList', {list: results, adminAddress: adminAddress}  );
+            res.render('product/productList', {list: results, adminAddress: adminAddress}  );
         } catch (error) {
             res.status(500).json({ success: false, error: error.message });
         }
@@ -91,7 +91,7 @@ const productController = {
             const qrImage = await QRCode.toDataURL(qrUrl);
 
             // render
-            res.render('productHistory', { 
+            res.render('product/productHistory', { 
                 product: product, 
                 list: formattedTimeline,
                 qrCode: qrImage,

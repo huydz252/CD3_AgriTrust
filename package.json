@@ -17,7 +17,10 @@
     "ejs": "^5.0.1",
     "ethers": "^6.16.0",
     "express": "^5.2.1",
+    "express-session": "^1.19.0",
     "mysql2": "^3.22.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
     "prisma": "^7.6.0",
     "pug": "^3.0.4",
     "qrcode": "^1.5.4"
