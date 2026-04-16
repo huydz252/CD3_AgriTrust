@@ -1,6 +1,6 @@
 const { ethers } = require("ethers");
 const contractABI = require("./contractABI.json"); 
-const contractAddress = "0xa756f1a1a4D30880491916c7644E28Fd36568ADe"; 
+const contractAddress = "0x80cbB53dB47231D6F1Ea29Ec3815a7351B0c4151"; 
 
 // Kết nối Ganache
 const provider = new ethers.JsonRpcProvider("http://127.0.0.1:7545");

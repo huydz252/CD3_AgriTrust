@@ -23,7 +23,7 @@ const productController = {
                     status: Number(p.currentStatus),
                     exists: p.exists,
                     price: extraInfo ? extraInfo.price : "Liên hệ",
-                    image: extraInfo ? extraInfo.image_url : "/img/default.jpg",
+                    image: extraInfo ? extraInfo.image_url : "/images/system/default.jpg",
                     description: extraInfo ? extraInfo.description : "Không tìm thấy mô tả sản phẩm"
                 }
             })

@@ -46,7 +46,15 @@
                             <span class="text-muted small">#<%= p.id %></span>
                         </div>
                         
-                        <p class="text-muted mb-3"><i class="bi bi-geo-alt-fill text-danger"></i> <%= p.origin %></p>
+                        <p class="text-muted mb-3" style="display: -webkit-box;
+                                                                        -webkit-line-clamp: 1; /* Giới hạn đúng 1 dòng */
+                                                                        -webkit-box-orient: vertical;
+                                                                        overflow: hidden;
+                                                                        text-overflow: ellipsis;
+                                                                        height: 1.5em; /* Cố định chiều cao để card luôn bằng nhau */">
+                            <i class="bi bi-geo-alt-fill text-danger"></i> 
+                            <%= p.origin %>
+                        </p>
                         
                         <div class="price-tag mb-3">
                             <%= typeof p.price === 'number' ? p.price.toLocaleString('vi-VN') : p.price %> <small>VNĐ</small>
@@ -118,7 +126,7 @@
 
                             <div class="col-12">
                                 <label class="form-label fw-bold small">Link hình ảnh</label>
-                                <input type="text" name="image_url" class="form-control rounded-pill" placeholder="/images/tao.jpg">
+                                <input type="text" name="image_url" class="form-control rounded-pill" placeholder="/images/products/taogialai.jpg">
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-bold small">Mô tả chi tiết</label>
