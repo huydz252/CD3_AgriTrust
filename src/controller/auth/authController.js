@@ -1,6 +1,5 @@
-
 const authController = {
-    
+
     loginPage: (req, res) => {
         if(req.isAuthenticated()){
             return redirect('/api/products')
@@ -9,8 +8,6 @@ const authController = {
     },
 
     googleCallback: (req, res) => {
-        // Sau khi Passport xác thực thành công, thông tin user nằm trong req.user
-        console.log("Đăng nhập thành công:", req.user.display_name);
         res.redirect('/api/products');
     },
 
