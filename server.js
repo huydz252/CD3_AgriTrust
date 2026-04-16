@@ -7,6 +7,7 @@ const path = require("path");
 // Import Routes
 const productRouter = require("./src/route/productRoutes.js");
 const authRouter = require("./src/route/authRoutes.js");
+const userRouter = require("./src/route/userRoutes.js");
 
 const app = express();
 
@@ -39,6 +40,7 @@ app.use((req, res, next) => {
 
 app.use("/api", productRouter);
 app.use("/auth", authRouter);
+app.use("/user", userRouter);
 app.get("/", (req, res) => res.redirect("/api/products"));
 
 app.listen(3000, () => console.log("🚀 Server AgriTrust chạy tại http://localhost:3000"));
