@@ -10,6 +10,7 @@ function updateFinalTotal () {
     document.getElementById('final-total').innerText = total.toLocaleString('vi-VN') + 'đ';
 
 }
+updateFinalTotal();
 
 async function updateQtyOnServer(cart_id, newQty) {
     try {
@@ -42,6 +43,35 @@ document.querySelectorAll('.btn-plus, .btn-minus').forEach(btn => {
         row.querySelector('.total-item-price').innerText = rowTotal.toLocaleString('vi-VN') + 'đ';
 
         updateFinalTotal();
-        updateQtyOnServer(row.dataset.id, qty);
+        updateQtyOnServer(row.dataset.cart_id, qty);
     })  
-}) 
+});
+
+//sự kiện nút delete
+document.querySelectorAll('.btn-delete').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        if(!confirm('Xóa sản phẩm này?')) return
+        
+        //phai lay cart-item de xoa ca row
+        const row = this.closest('.cart-item');
+        const cart_id = row.dataset.cart_id;
+
+        try {
+            const response = await fetch('/user/cart/remove', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cart_id })
+            });
+
+            const data = await response.json();
+            
+            if(data.success){
+                row.remove();
+                updateFinalTotal()
+            }else alert('Không thể xóa sản phẩm này!');
+    
+        } catch (err) {
+            console.error('Lỗi kết nối:', err);
+        }
+    })
+})

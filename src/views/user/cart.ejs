@@ -31,7 +31,7 @@
                                 </thead>
                                 <tbody>
                                     <% cartItems.forEach(item => { %>
-                                        <tr class="cart-item" data-id = "<%= item.id %>">
+                                        <tr class="cart-item" data-cart_id = "<%= item.id %>">
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <img src="<%= item.image_url %>" class="cart-item-img me-3">
@@ -50,7 +50,11 @@
                                                 </div>
                                             </td>
                                             <td class="total-item-price fw-bold text-success"><%= (item.price * item.quantity).toLocaleString('vi-VN') %>đ</td>
-                                            <td><button class="btn btn-link text-danger"><i class="bi bi-trash"></i></button></td>
+                                            <td>
+                                                <button class="btn btn-delete btn-link text-danger">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
                                         </tr>
                                     <% }) %>
                                 </tbody>

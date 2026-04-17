@@ -49,14 +49,29 @@ const cartController = {
     
     updateQuantity: async (req, res) => {
         const { cart_id, quantity } = req.body;
+        const user_id = req.user.id;
         try {
             await pool.query('UPDATE cart SET quantity = ? WHERE id = ? AND user_id = ?', 
-                        [quantity, cart_id, req.user.id]);
+                        [quantity, cart_id, user_id]);
+            res.json({ success: true });
+        } catch (error) {
+            console.log("Lỗi: ",error)
+            res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    removeProduct: async (req, res) => {
+        const { cart_id } = req.body;
+        const user_id = req.user.id;
+        try {
+            await pool.query('DELETE FROM cart WHERE id = ? AND user_id = ?', 
+                        [cart_id, user_id]);
             res.json({ success: true });
         } catch (error) {
             console.log("Lỗi: " ,error)
             res.status(500).json({ success: false, message: error.message });
         }
     }
+
 }
 module.exports = cartController
