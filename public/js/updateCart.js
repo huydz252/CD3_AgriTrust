@@ -8,7 +8,7 @@ function updateFinalTotal() {
 
     let shipFee = 0;
     const shipFeeEl = document.getElementById('ship-fee');
-    const btnCod = document.getElementById('btn-checkout-cod'); // ID nút thanh toán
+    const btnCod = document.getElementById('btn-checkout-cod'); 
     const btnMeta = document.getElementById('btn-checkout-meta');
     const msgMinOrder = document.getElementById('min-order-msg'); // Thông báo đơn < 50k
 
@@ -64,18 +64,22 @@ document.querySelectorAll('.btn-plus, .btn-minus').forEach(btn => {
         
         const row = this.closest('.cart-item');
         const input = row.querySelector('.input-qty');
-        const unitPrice = parseInt(row.querySelector('.unit-price').dataset.value);
-        let qty = parseInt(input.value);
+        const unitPrice = Number(row.querySelector('.unit-price').dataset.value);
+        const minQty = parseFloat(input.min) || 0.2
+        const step = parseFloat(input.step) || 0.1
+        let currentQty = parseFloat(input.value) || minQty;
         
-        if (this.classList.contains('btn-plus')) qty++;
-        else if (qty > 1) qty--;
+        if (this.classList.contains('btn-plus')) 
+            currentQty = currentQty + 0.1;
+        else if (currentQty > minQty)  //còn trừ dc thì trừ (> min) 
+            currentQty = currentQty - 0.1;
         
-        input.value = qty;
-        const rowTotal = unitPrice * qty;
+        input.value = Number(currentQty.toFixed(1));
+        const rowTotal = unitPrice * currentQty;
         row.querySelector('.total-item-price').innerText = rowTotal.toLocaleString('vi-VN') + 'đ';
 
         updateFinalTotal();
-        updateQtyOnServer(row.dataset.cart_id, qty);
+        updateQtyOnServer(row.dataset.cart_id, currentQty);
     })  
 });
 

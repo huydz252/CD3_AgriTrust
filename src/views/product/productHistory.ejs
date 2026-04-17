@@ -85,6 +85,7 @@
                                             <% if (user) { %>
                                                 <button type="submit" class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2">
                                                     <i class="bi bi-cart-plus"></i> 
+                                                    Thêm vào giỏ
                                                 </button>
                                             <% } else { %>
                                                 <a href="/auth/google" class="btn btn-outline-secondary rounded-pill">
@@ -99,7 +100,7 @@
                     </div>
                 </div>
 
-                <% if (isAdmin) { %>
+                <% if (user && user.role === 'admin') { %>
                     <div class="text-center mb-4 no-print">
                         <button class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalUpdate">
                             <i class="bi bi-plus-circle-fill me-2"></i> Cập nhật giai đoạn mới

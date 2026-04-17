@@ -5,7 +5,9 @@ const authController = require('../controller/auth/authController');
 const cartController = require('../controller/user/cartController');
 const profileController = require('../controller/user/profileController');
 
-// router.get('/profile', profileController.showCart);
+router.get('/profile', authController.isLoggedIn, profileController.getProfile);
+router.post('/update-wallet',authController.isLoggedIn, profileController.updateWallet);
+
 router.get('/cart',authController.isLoggedIn, cartController.showCart)
 router.post('/cart/add', cartController.addToCart)
 router.post('/cart/update-quantity', cartController.updateQuantity)

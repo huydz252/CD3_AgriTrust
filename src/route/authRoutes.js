@@ -5,7 +5,7 @@ const authController = require('../controller/auth/authController');
 
 router.get('/google', passport.authenticate('google', { 
     scope: ['profile', 'email'],
-    // prompt: 'select_account' 
+    prompt: 'select_account' 
 }));
 
 // Route xử lý callback từ Google
