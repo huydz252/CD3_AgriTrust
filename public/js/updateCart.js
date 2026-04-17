@@ -1,14 +1,46 @@
-function updateFinalTotal () {
+function updateFinalTotal() {
     let total = 0;
     document.querySelectorAll('.cart-item').forEach(row => {
-        const unitPrice = parseInt(row.querySelector('.unit-price').dataset.value);
-        const qty = parseInt(row.querySelector('.input-qty').value);
+        const unitPrice = Number(row.querySelector('.unit-price').dataset.value) || 0;
+        const qty = parseFloat(row.querySelector('.input-qty').value) || 0;
         total += unitPrice * qty;
     });
-    //cập nhật temp và final (vì chưa có phụ phí)
-    document.getElementById('temp-total').innerText = total.toLocaleString('vi-VN') + 'đ';
-    document.getElementById('final-total').innerText = total.toLocaleString('vi-VN') + 'đ';
 
+    let shipFee = 0;
+    const shipFeeEl = document.getElementById('ship-fee');
+    const btnCod = document.getElementById('btn-checkout-cod'); // ID nút thanh toán
+    const btnMeta = document.getElementById('btn-checkout-meta');
+    const msgMinOrder = document.getElementById('min-order-msg'); // Thông báo đơn < 50k
+
+    // Logic tính phí ship
+    if (total > 0 && total < 500000) {
+        shipFee = 30000; // Phí ship mặc định 30k nếu dưới 500k
+        if(shipFeeEl) {
+            shipFeeEl.innerText = '30.000đ';
+            shipFeeEl.classList.replace('text-success', 'text-dark');
+        }
+    } else {
+        shipFee = 0;
+        if(shipFeeEl) {
+            shipFeeEl.innerText = 'Miễn phí';
+            shipFeeEl.classList.replace('text-dark', 'text-success');
+        }
+    }
+
+    // Logic kiểm tra đơn hàng tối thiểu 50k
+    if (total < 50000 && total > 0) {
+        if(msgMinOrder) msgMinOrder.classList.remove('d-none');
+        btnCod.disabled = true;
+        btnMeta.disabled = true;
+    } else {
+        if(msgMinOrder) msgMinOrder.classList.add('d-none');
+        btnCod.disabled = false;
+        btnMeta.disabled = false;
+    }
+
+    const finalTotal = total + shipFee;
+    document.getElementById('temp-total').innerText = total.toLocaleString('vi-VN') + 'đ';
+    document.getElementById('final-total').innerText = finalTotal.toLocaleString('vi-VN') + 'đ';
 }
 updateFinalTotal();
 
