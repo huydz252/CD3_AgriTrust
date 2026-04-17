@@ -23,33 +23,33 @@
                                 <thead>
                                     <tr class="text-muted small">
                                         <th>Sản phẩm</th>
-                                        <th>Giá</th>
-                                        <th>Số lượng</th>
+                                        <th>Giá (1 kg)</th>
+                                        <th>Số lượng (kg)</th>
                                         <th>Tổng</th>
-                                        <th></th>
+                                        <th>Xóa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <% cartItems.forEach(item => { %>
-                                        <tr>
+                                        <tr class="cart-item" data-id = "<%= item.id %>">
                                             <td>
                                                 <div class="d-flex align-items-center">
                                                     <img src="<%= item.image_url %>" class="cart-item-img me-3">
                                                     <div>
                                                         <h6 class="mb-0 fw-bold"><%= item.product_name %></h6>
-                                                        <small class="text-muted">Nguồn gốc: <%= item.origin %></small>
+                                                        <small class="text-muted"><%= item.name %></small>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td><%= item.price.toLocaleString('vi-VN') %>đ</td>
+                                            <td class="unit-price" data-value="<%= item.price %>"><%= (item.price * 1).toLocaleString('vi-VN') %>đ</td>
                                             <td>
                                                 <div class="input-group input-group-sm quantity-control">
-                                                    <button class="btn btn-outline-secondary">-</button>
-                                                    <input type="text" class="form-control text-center" value="<%= item.quantity %>">
-                                                    <button class="btn btn-outline-secondary">+</button>
+                                                    <button class="btn btn-outline-secondary btn-minus">-</button>
+                                                    <input type="text" class="input-qty form-control text-center" value="<%= item.quantity %>">
+                                                    <button class="btn btn-outline-secondary btn-plus">+</button>
                                                 </div>
                                             </td>
-                                            <td class="fw-bold text-success"><%= (item.price * item.quantity).toLocaleString('vi-VN') %>đ</td>
+                                            <td class="total-item-price fw-bold text-success"><%= (item.price * item.quantity).toLocaleString('vi-VN') %>đ</td>
                                             <td><button class="btn btn-link text-danger"><i class="bi bi-trash"></i></button></td>
                                         </tr>
                                     <% }) %>
@@ -71,7 +71,7 @@
                     <h5 class="fw-bold mb-4">Tổng cộng</h5>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Tạm tính:</span>
-                        <span>0đ</span>
+                        <span id="temp-total">0đ</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3 border-bottom pb-3">
                         <span>Phí vận chuyển:</span>
@@ -79,7 +79,7 @@
                     </div>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fs-5 fw-bold">Tổng tiền:</span>
-                        <span class="fs-5 fw-bold text-success">0đ</span>
+                        <span class="fs-5 fw-bold text-success" id="final-total">0đ</span>
                     </div>
                     <button class="btn btn-dark w-100 rounded-pill py-2 mb-2 fw-bold">THANH TOÁN COD</button>
                     <button class="btn btn-outline-primary w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2">
@@ -90,5 +90,7 @@
             </div>
         </div>
     </div>
+
+    <script src="/js/updateCart.js"></script>
 </body>
 </html>

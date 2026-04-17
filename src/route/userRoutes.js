@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const authController = require('../controller/auth/authController');
+const cartController = require('../controller/user/cartController');
+const profileController = require('../controller/user/profileController');
 
-// profile
-router.get('/profile', authController.isLoggedIn, (req, res) => {
-    res.render('user/profile'); 
-});
-router.get('/cart', authController.isLoggedIn, (req, res) =>{
-    res.render('user/cart', {cartItems : [] });
-})
+router.get('/profile', profileController.showCart);
+router.get('/cart',authController.isLoggedIn, cartController.showCart)
+router.post('/cart/add', cartController.addToCart)
+router.post('/cart/update-quantity', cartController.updateQuantity)
 
 module.exports = router

@@ -87,7 +87,7 @@
                             <a href="/api/history/<%= p.id %>" class="btn btn-trace fw-bold py-2">
                                 <i class="bi bi-shield-check-fill me-2"></i> Truy xuất nguồn gốc
                             </a>
-                            <form action="/cart/add" method="POST">
+                            <form action="/user/cart/add" method="POST">
                             <input type="hidden" name="productId" value="<%= p.id %>">
                             <div class="d-grid gap-2 btn-add-to-cart" style="padding: 10px 0;">
                                 <% if (user) { %>
