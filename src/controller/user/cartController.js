@@ -39,8 +39,6 @@ const cartController = {
                     [existing[0].id]
                 );
             }
-
-            res.redirect('/api/products')
         } catch (error) {
             console.error("Gặp lỗi: ", error)
             res.status(500).send("Lỗi khi thêm sản phẩm vào giỏ")

@@ -10,7 +10,7 @@ const profileController = {
             if(user.length == 0) {
                 res.status(404).send('Không tìm thấy người dùng!!')
             }
-            // console.log("check: ", user)
+            console.log("check: ", user)
             res.render('user/profile', {user: user[0]})
         } catch (error) {
             console.error("Lỗi: ", error);

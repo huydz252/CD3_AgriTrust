@@ -83,7 +83,8 @@
                                         <input type="hidden" name="productId" value="<%= product.id %>">
                                         <div class="d-grid gap-2 btn-add-to-cart" style="padding: 10px 0;">
                                             <% if (user) { %>
-                                                <button type="submit" class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2">
+                                                <button class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2"
+                                                onclick="alert('Đã thêm vào giỏ hàng!')">
                                                     <i class="bi bi-cart-plus"></i> 
                                                     Thêm vào giỏ
                                                 </button>
@@ -159,7 +160,6 @@
         </div>
     </div>
 
-    <% if (isAdmin) { %>
     <div class="modal fade" id="modalUpdate" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -197,7 +197,6 @@
             </div>
         </div>
     </div>
-    <% } %> 
 
     <input type="hidden" id="adminAddr" value="<%= adminAddress %>">
 

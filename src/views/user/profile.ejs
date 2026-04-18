@@ -31,6 +31,14 @@
                                 <label class="text-muted small text-uppercase fw-bold">Ngày tham gia</label>
                                 <p class="fs-5"><%= new Date(user.created_at).toLocaleDateString('vi-VN') %></p>
                             </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Số điện thoại</label>
+                                <p class="fs-5"><%= user.phone %></p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small text-uppercase fw-bold">Địa chỉ nhận hàng</label>
+                                <p class="fs-5"><%= user.address%></p>
+                            </div>
                             <div class="col-12">
                                 <label class="text-muted small text-uppercase fw-bold">Ví Blockchain (MetaMask)</label>
                                 <div class="d-flex align-items-center mt-2">

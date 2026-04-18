@@ -92,16 +92,40 @@
                         <span class="fs-5 fw-bold">Tổng tiền:</span>
                         <span class="fs-5 fw-bold text-success" id="final-total">0đ</span>
                     </div>
+                    <button id="btn-checkout-qr" class="btn btn-dark w-100 rounded-pill py-2 mb-2 fw-bold">THANH TOÁN BẰNG QR</button>
                     <button id="btn-checkout-cod" class="btn btn-dark w-100 rounded-pill py-2 mb-2 fw-bold">THANH TOÁN COD</button>
                     <button id="btn-checkout-meta" class="btn btn-outline-primary w-100 rounded-pill py-2 d-flex align-items-center justify-content-center gap-2">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/3/36/MetaMask_Logo.svg" style="width: 20px;">
+                        <img src="/images/system/metamask_icon.jpg" style="width: 20px;">
                         THANH TOÁN METAMASK
                     </button>
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- checkout -->
+         <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0">
+                    <div class="modal-header border-0">
+                        <h5 class="modal-title fw-bold">Quét mã QR để thanh toán</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center pb-4">
+                        <img id="qrImage" src="" alt="VietQR" class="img-fluid rounded-3 mb-3 shadow-sm" style="max-width: 300px;">
+                        <p class="mb-1 text-muted">Số tiền: <strong id="qrAmount">0đ</strong></p>
+                        <p class="small text-danger">Nội dung: <strong id="qrDesc"></strong></p>
+                        <hr>
+                        <div class="alert alert-info small mb-0">
+                            Hệ thống sẽ tự động xác nhận sau khi nhận được tiền.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/updateCart.js"></script>
+    <script src="/js/checkout.js"></script>
 </body>
 </html>

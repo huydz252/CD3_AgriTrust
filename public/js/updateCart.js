@@ -8,6 +8,7 @@ function updateFinalTotal() {
 
     let shipFee = 0;
     const shipFeeEl = document.getElementById('ship-fee');
+    const btnQr = document.getElementById('btn-checkout-qr')
     const btnCod = document.getElementById('btn-checkout-cod'); 
     const btnMeta = document.getElementById('btn-checkout-meta');
     const msgMinOrder = document.getElementById('min-order-msg'); // Thông báo đơn < 50k
@@ -30,10 +31,12 @@ function updateFinalTotal() {
     // Logic kiểm tra đơn hàng tối thiểu 50k
     if (total < 50000 && total > 0) {
         if(msgMinOrder) msgMinOrder.classList.remove('d-none');
+        btnQr.disabled = true;
         btnCod.disabled = true;
         btnMeta.disabled = true;
     } else {
         if(msgMinOrder) msgMinOrder.classList.add('d-none');
+        btnQr.disabled = false;
         btnCod.disabled = false;
         btnMeta.disabled = false;
     }
