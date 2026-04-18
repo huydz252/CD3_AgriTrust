@@ -1,5 +1,12 @@
+function getRawAmount(elementId) {
+    const text = document.getElementById(elementId).innerText;
+    return parseInt(text.replace(/\D/g, '')) || 0;
+}
+
 document.getElementById('btn-checkout-qr')?.addEventListener('click', function() {
-    const amount = document.getElementById('final-total').innerText;
+    const tempTotal = getRawAmount('temp-total');
+    const shipFee = getRawAmount('ship-fee');
+    const amount = tempTotal + shipFee;
     console.log("check amount: ", amount)
     const orderId = "AT" + Date.now(); 
     const description = `AgriTrust Thanh toan don hang ${orderId}`;
