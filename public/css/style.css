@@ -187,16 +187,29 @@ body {
 
 /* sidebar (cart) */
 .sidebar {
+    position: fixed; /* Bắt buộc là fixed để không đẩy layout */
+    z-index: 2000;   /* Phải cao hơn các thành phần khác */
+    left: 0;
+    top: 0;
     height: 100%;
-    width: 0; /* Mặc định đóng */
+    width: 0;
+    background-color: #1a1a1a;
+    transition: 0.3s;
+    overflow-x: hidden;
+    box-shadow: 4px 0 10px rgba(0,0,0,0.2); /* Tạo bóng cho đẹp */
+}
+
+.sidebar-overlay {
     position: fixed;
-    z-index: 2000; /* Nổi lên trên cùng */
+    display: none;
+    width: 100%;
+    height: 100%;
     top: 0;
     left: 0;
-    background-color: #1a1a1a; /* Màu tối sang trọng */
-    overflow-x: hidden;
-    transition: 0.15s; /* Hiệu ứng trượt mượt */
-    padding-top: 60px;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5); /* Nền mờ đen */
+    z-index: 1999; /* Thấp hơn sidebar 1 bậc */
 }
 
 #openSidebar {
@@ -237,18 +250,7 @@ body {
     font-size: 24px !important;  
     -webkit-text-stroke: 1px #000; /* Thủ thuật làm đậm icon (độ dày nét) */
 }
-/* Lớp phủ mờ toàn màn hình */
-.sidebar-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1999; 
-    display: none; 
-    transition: 0.3s;
-}
+
 
 /* Header bên trong sidebar */
 .sidebar-header {

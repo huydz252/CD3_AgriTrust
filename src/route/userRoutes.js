@@ -14,9 +14,10 @@ router.post('/cart/update-quantity', authController.isLoggedIn, cartController.u
 router.delete('/cart/remove', authController.isLoggedIn, cartController.removeProduct)
 router.get('/cart/getOrderCode', authController.isLoggedIn, cartController.getOrderCode)
 router.post('/cart/order', authController.isLoggedIn, cartController.order)
-router.get('/cart/purchased_product', authController.isLoggedIn, cartController.getOrderCode)
-router.get('/cart/history', authController.isLoggedIn, cartController.getOrderCode)
-router.get('/cart/statistics', authController.isLoggedIn, cartController.getOrderCode)
+router.get('/cart/purchased_product', authController.isLoggedIn, cartController.purchasedProduct)
+router.get('/cart/purchased_product/detail/:id', authController.isLoggedIn, cartController.orderDetails)
+router.get('/cart/history', authController.isLoggedIn, cartController.history)
+router.get('/cart/statistics', authController.isLoggedIn, cartController.statistics)
 
 
 

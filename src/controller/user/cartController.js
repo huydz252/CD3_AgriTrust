@@ -147,7 +147,79 @@ const cartController = {
     },
     
     purchasedProduct: async (req, res) => {
-        res.render('user/purchasedProduct')
+        try {
+            const userId = req.user.id;
+            // Lấy danh sách đơn hàng chưa hoàn thành/hủy
+            const [orders] = await pool.query(
+                `SELECT * FROM orders 
+                WHERE user_id = ? AND status NOT IN ('completed', 'cancelled') 
+                ORDER BY created_at DESC`,
+                [userId]
+            );
+            res.render('user/purchasedProduct', {
+                user: req.user,
+                orders: orders,
+                title: 'Sản phẩm đang mua'
+            });
+        } catch (error) {
+            console.error("Lỗi lấy sản phẩm đang mua:", error);
+            res.status(500).send("Lỗi hệ thống");
+        }
+    },
+
+    orderDetails: async (req, res) => {
+        try {
+            const orderId = req.params.id;
+            // 1. Phải lấy mảng kết quả
+            const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
+
+            // 2. KIỂM TRA: Nếu không tìm thấy đơn hàng thì return sớm
+            if (!orders || orders.length === 0) {
+                return res.status(404).send("Không tìm thấy đơn hàng");
+            }
+
+            // 3. Lấy đối tượng đơn hàng đầu tiên
+            const order = orders[0]; 
+            const finalTotal = Number(order.total_amount); // Dùng order thay vì orders
+            
+            let shippingFee = 0;
+            let subTotal = 0;
+
+            // Logic bóc tách của Huy (Giữ nguyên vì logic này đã đúng yêu cầu 500k)
+            if (finalTotal > 500000) {
+                if (finalTotal - 30000 < 500000) {
+                    shippingFee = 30000;
+                    subTotal = finalTotal - 30000;
+                } else {
+                    shippingFee = 0;
+                    subTotal = finalTotal;
+                }
+            } else {
+                shippingFee = 30000;
+                subTotal = finalTotal - 30000;
+            }
+
+            const [details] = await pool.query(
+                `SELECT od.*, p.name as name, p.image_url 
+                FROM order_details od 
+                JOIN products p ON od.product_id = p.id 
+                WHERE od.order_id = ?`, [orderId]
+            );
+
+            // 4. Truyền 'order' (đối tượng đơn lẻ) vào view thay vì 'orders' (mảng)
+            res.render('user/orderDetail', {
+                user: req.user,
+                order: order, 
+                details: details,
+                subTotal: subTotal,
+                shippingFee: shippingFee,
+                finalTotal: finalTotal,
+                title: 'Chi tiết đơn hàng'
+            });
+        } catch (error) {
+            console.error(error);
+            res.status(500).send("Lỗi tải chi tiết đơn hàng");
+        }
     },
 
     history: async (req, res) => {
