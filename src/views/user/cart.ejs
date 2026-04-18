@@ -145,8 +145,11 @@
                                 <label class="form-label small fw-bold text-uppercase">Địa chỉ giao hàng</label>
                                 <textarea id="cod-address" class="form-control rounded-3" rows="3" required><%= user.address || '' %></textarea>
                             </div>
-
                             <div class="bg-light p-3 rounded-3 mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-muted">Mã đơn hàng:</span>
+                                    <span id="order-code" class="small fw-bold"></span>
+                                </div>
                                 <div class="d-flex justify-content-between mb-1">
                                     <span class="small text-muted">Tổng tiền sản phẩm:</span>
                                     <span id="cod-temp" class="small fw-bold">0đ</span>

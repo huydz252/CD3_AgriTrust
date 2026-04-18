@@ -8,9 +8,11 @@ const profileController = require('../controller/user/profileController');
 router.get('/profile', authController.isLoggedIn, profileController.getProfile);
 router.post('/update-wallet',authController.isLoggedIn, profileController.updateWallet);
 
-router.get('/cart',authController.isLoggedIn, cartController.showCart)
-router.post('/cart/add', cartController.addToCart)
-router.post('/cart/update-quantity', cartController.updateQuantity)
-router.delete('/cart/remove',authController.isLoggedIn, cartController.removeProduct)
+router.get('/cart', authController.isLoggedIn, cartController.showCart)
+router.post('/cart/add', authController.isLoggedIn, cartController.addToCart)
+router.post('/cart/update-quantity', authController.isLoggedIn, cartController.updateQuantity)
+router.delete('/cart/remove', authController.isLoggedIn, cartController.removeProduct)
+router.get('/cart/getOrderCode', authController.isLoggedIn, cartController.getOrderCode)
+
 
 module.exports = router

@@ -1,5 +1,6 @@
 const  pool  = require("../../../db");
 const authController = require('../../controller/auth/authController')
+const orderServive = require('../../service/orderService')
 
 const cartController = {
 
@@ -79,6 +80,24 @@ const cartController = {
         } catch (error) {
             console.log("Lỗi: " ,error)
             res.status(500).json({ success: false, message: error.message });
+        }
+    },
+
+    getOrderCode: async (req, res) => {
+        try {
+            const orderCode = await orderServive.generateOrderCode();
+            // console.log(orderCode); // Log để debug thôi, xong thì nên xóa
+            
+            return res.status(200).json({
+                success: true, 
+                orderCode: orderCode // Trả thẳng orderCode ra ngoài cho dễ dùng ở FE
+            });
+        } catch (error) {
+            console.error("Lỗi lấy mã đơn hàng:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Không thể tạo mã đơn hàng lúc này"
+            });
         }
     }
 

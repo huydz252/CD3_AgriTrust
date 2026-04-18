@@ -83,6 +83,11 @@ document.querySelectorAll('.btn-plus, .btn-minus').forEach(btn => {
 
         updateFinalTotal();
         updateQtyOnServer(row.dataset.cart_id, currentQty);
+        
+        //update orderCode
+        if (typeof window.resetOrderCode === 'function') {
+        window.resetOrderCode();
+    }
     })  
 });
 
@@ -112,5 +117,10 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
         } catch (err) {
             console.error('Lỗi kết nối:', err);
         }
-    })
-})
+        
+        //update orderCode
+        if (typeof window.resetOrderCode === 'function') {
+            window.resetOrderCode();
+        }
+    });
+});
