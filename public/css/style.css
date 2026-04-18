@@ -185,6 +185,113 @@ body {
     border-radius: 50px;
 }
 
+/* sidebar (cart) */
+.sidebar {
+    height: 100%;
+    width: 0; /* Mặc định đóng */
+    position: fixed;
+    z-index: 2000; /* Nổi lên trên cùng */
+    top: 0;
+    left: 0;
+    background-color: #1a1a1a; /* Màu tối sang trọng */
+    overflow-x: hidden;
+    transition: 0.15s; /* Hiệu ứng trượt mượt */
+    padding-top: 60px;
+}
+
+#openSidebar {
+    /* 1. Vị trí và Khoảng cách */
+    position: static !important;
+    bottom: auto !important;
+    left: auto !important;
+    margin-right: 30px !important; /* Tăng từ 15px lên 30px để nhích sang trái, xa quả táo hơn */
+    margin-left: 10px !important;  /* Khoảng cách với mép trái màn hình */
+
+    /* 2. Xóa màu nền và khung */
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    
+    /* 3. Style cho chữ và Icon */
+    color: #000 !important;       /* Màu đen đậm cho chữ Menu */
+    font-weight: 700 !important;  /* Làm chữ đậm hơn */
+    font-size: 16px;
+    
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+/* Hiệu ứng khi rê chuột vào: chỉ mờ nhẹ đi thay vì đổi màu nền */
+#openSidebar:hover {
+    opacity: 0.7;
+    background: none !important;
+}
+
+/* 4. Làm đậm icon 3 gạch */
+#openSidebar i {
+    color: #000 !important;     
+    font-size: 24px !important;  
+    -webkit-text-stroke: 1px #000; /* Thủ thuật làm đậm icon (độ dày nét) */
+}
+/* Lớp phủ mờ toàn màn hình */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1999; 
+    display: none; 
+    transition: 0.3s;
+}
+
+/* Header bên trong sidebar */
+.sidebar-header {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+}
+
+/* Các link điều hướng */
+.sidebar-content a {
+    padding: 15px 25px;
+    text-decoration: none;
+    font-size: 18px;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+.sidebar-content a:hover {
+    color: #f1f1f1;
+    background-color: #333;
+}
+
+.sidebar-content a.active {
+    color: #2ecc71; /* Màu xanh AgriTrust cho mục đang chọn */
+    border-left: 4px solid #2ecc71;
+}
+
+/* Nút đóng (X) */
+.sidebar .closebtn {
+    font-size: 30px;
+    color: white;
+    text-decoration: none;
+}
+
+/* Đẩy nội dung chính khi mở sidebar */
+#main {
+    transition: margin-left 0.2s
+}
+
+
 /* --- Print & Utility --- */
 @media print { 
     .no-print { display: none !important; } 

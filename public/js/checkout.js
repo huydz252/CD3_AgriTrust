@@ -61,3 +61,42 @@ document.getElementById('btn-checkout-cod')?.addEventListener('click', async fun
     }
     
 });
+
+function getCartData() {
+    const items = [];
+    document.querySelectorAll('.cart-item').forEach(row => {
+        items.push({
+            product_id: row.getAttribute('data-product_id'), 
+            quantity: parseFloat(row.querySelector('.input-qty').value),
+            price: parseInt(row.querySelector('.unit-price').innerText.replace(/\D/g, ''))
+        });
+    });
+    return items;
+}
+document.getElementById('confirm-cod-btn')?.addEventListener('click', async function() {
+    const data = {
+        orderCode: document.getElementById('order-code').innerText, 
+        shippingPhone: document.getElementById('cod-phone').value,
+        shippingAddress: document.getElementById('cod-address').value,
+        paymentMethod: 'COD',   
+        totalAmount: getRawAmount('cod-final'),
+        items: getCartData() 
+    };
+
+    console.log("check data post: ", data)
+
+    const response = await fetch('/user/cart/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+    if (result.success) {
+        //xóa biến savedOrderCode để phiên sau ra mã mới
+        if (typeof window.resetOrderCode === 'function') window.resetOrderCode();
+        
+        alert("Đặt hàng thành công!");
+        window.location.href = "/user/cart";
+    }
+});

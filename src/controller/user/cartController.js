@@ -16,7 +16,7 @@ const cartController = {
                 account: process.env.BANK_ACCOUNT,
                 template: process.env.BANK_TEMPLATE
             }
-            
+            console.log('check cartItems: ', cartItems)
             //console.log("check cartItems: ", cartItems)
             res.render('user/cart', {
                 userId,
@@ -99,7 +99,65 @@ const cartController = {
                 message: "Không thể tạo mã đơn hàng lúc này"
             });
         }
-    }
+    }, 
 
+
+    /**
+     * khởi tạo lệnh order --> status = pending (chờ)
+     */
+    order: async (req, res) => {
+        const userId = req.user.id;
+        const {orderCode, totalAmount, paymentMethod, shippingPhone, shippingAddress, items} = req.body;
+        const connection = await pool.getConnection()
+        const orderQuery = 'INSERT INTO orders (order_code, user_id, total_amount, payment_method, status, shipping_phone, shipping_address) VALUES (?,?,?,?,?,?,?)';
+        const orderStatus = (paymentMethod === 'QR') ? 'awaiting_payment' : 'pending';
+        
+        try {
+            await connection.beginTransaction();
+            const [orderResults] = await pool.query(
+                orderQuery, 
+                [orderCode, userId, totalAmount, paymentMethod, orderStatus, shippingPhone, shippingAddress]
+            )
+            
+            //lấy order_id để liên kết với bảng order_results
+            const orderId = orderResults.insertId;
+
+            if(items && items.length > 0){
+                const orderDertailsQuery = 'INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) VALUES ?';
+                const orderDetailValues = items.map(item => [
+                    orderId,
+                    Number(item.product_id),
+                    item.quantity,
+                    item.price,
+                    item.quantity * item.price
+                ])
+                await connection.query(orderDertailsQuery, [orderDetailValues]);
+
+                //xóa sản phẩm đã mua (sau này mở rộng chỉ xóa những sp đc chọn để mua)
+                await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
+                await connection.commit()
+            }
+            res.status(200).json({success: true, message: "Đặt hàng thành công"})
+        } catch (error) {
+            // Nếu có bất kỳ lỗi nào, hủy bỏ toàn bộ các lệnh INSERT ở trên
+            await connection.rollback();
+            console.error("Lỗi đặt hàng: ", error);
+            res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo đơn hàng" });
+        }
+    },
+    
+    purchasedProduct: async (req, res) => {
+        res.render('user/purchasedProduct')
+    },
+
+    history: async (req, res) => {
+        res.render('user/history')
+    },
+
+    statistics: async (req, res) => {
+        res.render('user/statistics')
+    },
+    
 }
+
 module.exports = cartController
