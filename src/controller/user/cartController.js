@@ -9,8 +9,19 @@ const cartController = {
             const userId = req.user.id
             const query = "SELECT cart.*, products.name, products.price, products.image_url FROM cart JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?"
             const [cartItems] = await pool.query(query, [userId])
+
+            const bankConfig = {
+                id: process.env.BANK_ID,
+                account: process.env.BANK_ACCOUNT,
+                template: process.env.BANK_TEMPLATE
+            }
+            
             //console.log("check cartItems: ", cartItems)
-            res.render('user/cart', {cartItems})
+            res.render('user/cart', {
+                userId,
+                cartItems, 
+                bankConfig
+            })
         } catch (error) {
             console.error("gặp lỗi: ", error)
             res.status(500).send("Lỗi khi render giỏ hàng")

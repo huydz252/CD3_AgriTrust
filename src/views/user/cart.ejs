@@ -102,7 +102,7 @@
             </div>
         </div>
 
-        <!-- checkout -->
+        <!-- modal checkout-qr -->
          <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content rounded-4 border-0">
@@ -123,7 +123,61 @@
             </div>
         </div>
 
+        <!-- modal checkout-cod -->
+        <div class="modal fade" id="codModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow">
+                    <div class="modal-header border-bottom-0 pb-0">
+                        <h5 class="modal-title fw-bold">Xác nhận đơn hàng (COD)</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-4">Vui lòng kiểm tra lại thông tin nhận hàng. Bạn có thể thay đổi nếu muốn giao đến địa chỉ khác.</p>
+                        
+                        <form id="form-checkout-cod">
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Số điện thoại liên hệ</label>
+                                <input type="text" id="cod-phone" class="form-control rounded-3" 
+                                    value="<%= user.phone || '' %>" required>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold text-uppercase">Địa chỉ giao hàng</label>
+                                <textarea id="cod-address" class="form-control rounded-3" rows="3" required><%= user.address || '' %></textarea>
+                            </div>
+
+                            <div class="bg-light p-3 rounded-3 mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-muted">Tổng tiền sản phẩm:</span>
+                                    <span id="cod-temp" class="small fw-bold">0đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span class="small text-muted">Phí vận chuyển:</span>
+                                    <span id="cod-ship" class="small fw-bold">0đ</span>
+                                </div>
+                                <div class="d-flex justify-content-between border-top pt-2 mt-2">
+                                    <span class="fw-bold">Tổng thanh toán:</span>
+                                    <span id="cod-final" class="fw-bold text-success">0đ</span>
+                                </div>
+                            </div>
+
+                            <button type="button" id="confirm-cod-btn" class="btn btn-dark w-100 rounded-pill py-2 fw-bold">
+                                XÁC NHẬN ĐẶT HÀNG
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
+    <script>
+        const bankConfig = {
+            id: "<%= bankConfig.id %>",
+            account: "<%= bankConfig.account %>",
+            template: "<%= bankConfig.template %>",
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/updateCart.js"></script>
     <script src="/js/checkout.js"></script>

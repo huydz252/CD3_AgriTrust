@@ -9,14 +9,11 @@ passport.use(new GoogleStrategy({
   },
   async (accessToken, refreshToken, profile, done) => {
     try {
-        // 1. Kiểm tra xem User này đã có trong DB chưa (dựa vào google_id)
         const [rows] = await pool.query('SELECT * FROM users WHERE google_id = ?', [profile.id]);
         
         if (rows.length > 0) {
-            // Nếu đã tồn tại, trả về thông tin user đó
             return done(null, rows[0]);
         } else {
-            // 2. Nếu chưa có, tạo mới user trong MySQL
             const newUser = {
                 google_id: profile.id,
                 email: profile.emails[0].value,
