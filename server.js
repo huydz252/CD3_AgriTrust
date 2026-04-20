@@ -33,7 +33,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 require('./src/config/auth/passport');
-// Middleware để truyền user vào local variables của mọi View
 app.use((req, res, next) => {
     res.locals.user = req.user || null;
     next();

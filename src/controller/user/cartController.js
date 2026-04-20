@@ -222,8 +222,15 @@ const cartController = {
         }
     },
 
-    history: async (req, res) => {
-        res.render('user/history')
+    async getHistory(req, res) {
+        const userId = req.user.id;
+        // Lọc đơn hàng của User có status là 'completed'
+        const orders = await pool.query(
+            'SELECT * FROM orders WHERE user_id = ? AND status = "completed" ORDER BY created_at DESC', 
+            [userId]
+        );
+        console.log('check completed: ', orders[0])
+        res.render('user/history', { orders: orders[0], user: req.user });
     },
 
     statistics: async (req, res) => {

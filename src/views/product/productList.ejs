@@ -93,11 +93,12 @@
             <% }) %>
         </div>
     </div>
-
-    <button class="btn btn-success add-btn border-0" data-bs-toggle="modal" data-bs-target="#modalCreate">
-        <i class="bi bi-plus-lg"></i>
-    </button>
-
+    
+    <% if (user && user.role === 'admin') { %>
+        <button class="btn btn-success add-btn border-0" data-bs-toggle="modal" data-bs-target="#modalCreate">
+            <i class="bi bi-plus-lg"></i>
+        </button>
+    <% } %>
     <div class="modal fade" id="modalCreate" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">

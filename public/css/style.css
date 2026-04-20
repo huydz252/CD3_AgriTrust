@@ -3,6 +3,21 @@ body {
     background-color: #f0f2f5; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
     color: #333;
+    padding-top: 80px;
+}
+
+/* Cố định Header */
+.navbar.bg-dark {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030; /* Cao hơn nội dung card nhưng thấp hơn Sidebar */
+}
+
+/* Đẩy nội dung xuống để không bị Header che mất */
+body {
+     /* Điều chỉnh con số này dựa trên chiều cao thực tế của Header */
 }
 
 /* --- Layout Components --- */
