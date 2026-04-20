@@ -16,8 +16,7 @@ const cartController = {
                 account: process.env.BANK_ACCOUNT,
                 template: process.env.BANK_TEMPLATE
             }
-            console.log('check cartItems: ', cartItems)
-            //console.log("check cartItems: ", cartItems)
+
             res.render('user/cart', {
                 userId,
                 cartItems, 
@@ -170,17 +169,16 @@ const cartController = {
     orderDetails: async (req, res) => {
         try {
             const orderId = req.params.id;
-            // 1. Phải lấy mảng kết quả
             const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
 
-            // 2. KIỂM TRA: Nếu không tìm thấy đơn hàng thì return sớm
             if (!orders || orders.length === 0) {
                 return res.status(404).send("Không tìm thấy đơn hàng");
             }
 
-            // 3. Lấy đối tượng đơn hàng đầu tiên
+            //lay data don hang 
             const order = orders[0]; 
-            const finalTotal = Number(order.total_amount); // Dùng order thay vì orders
+            const finalTotal = Number(order.total_amount);
+            console.log('check finaltotal ', finalTotal)
             
             let shippingFee = 0;
             let subTotal = 0;
@@ -206,7 +204,6 @@ const cartController = {
                 WHERE od.order_id = ?`, [orderId]
             );
 
-            // 4. Truyền 'order' (đối tượng đơn lẻ) vào view thay vì 'orders' (mảng)
             res.render('user/orderDetail', {
                 user: req.user,
                 order: order, 
@@ -224,7 +221,6 @@ const cartController = {
 
     async getHistory(req, res) {
         const userId = req.user.id;
-        // Lọc đơn hàng của User có status là 'completed'
         const orders = await pool.query(
             'SELECT * FROM orders WHERE user_id = ? AND status = "completed" ORDER BY created_at DESC', 
             [userId]

@@ -19,9 +19,12 @@
                                 <%= user.role === 'admin' ? 'Quản trị viên' : 'Khách hàng' %>
                             </span>
                         </div>
+                        <button class="btn btn-outline-success btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#editProfileModal">
+                            <i class="bi bi-pencil-square me-2"></i>Chỉnh sửa hồ sơ
+                        </button>
 
                         <hr class="my-4 opacity-25">
-
+                        
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label class="text-muted small text-uppercase fw-bold">Email liên hệ</label>
@@ -60,6 +63,40 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- modal update profile -->
+     <div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow" style="border-radius: 20px;">
+                <div class="modal-header border-0 pt-4 px-4">
+                    <h5 class="modal-title fw-bold">Cập nhật hồ sơ</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="/user/profile/update" method="POST">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Tên hiển thị</label>
+                            <input type="text" name="display_name" class="form-control rounded-3" value="<%= user.display_name %>" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Số điện thoại</label>
+                            <input type="tel" name="phone" class="form-control rounded-3" value="<%= user.phone || '' %>" placeholder="Nhập số điện thoại..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-muted text-uppercase">Địa chỉ giao hàng</label>
+                            <textarea name="address" class="form-control rounded-3" rows="2" placeholder="Số nhà, tên đường, phường/xã..." required><%= user.address || '' %></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pb-4 px-4">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" id="btnUpdateProfile" class="btn btn-success rounded-pill px-4 shadow-sm">
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

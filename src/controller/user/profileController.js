@@ -18,6 +18,23 @@ const profileController = {
         }
     },
 
+    updateProfile: async (req, res) => {
+        const user_id = req.user.id;
+        const {display_name, phone, address} = req.body
+        const query = "UPDATE users SET display_name = ?, phone = ?, address = ? WHERE id = ?"
+        try {
+            const [user] = await pool.query(query, [display_name, phone, address, user_id])
+            if(user.length == 0) {
+                res.status(404).send('Không tìm thấy người dùng!!')
+            }
+            console.log("check: ", user)
+            res.redirect('/user/profile')
+        } catch (error) {
+            console.error("Lỗi: ", error);
+            res.status(500).send('Lỗi khi truy cập profile!')
+        }
+    },
+
     updateWallet: async (req, res) => {
         const { walletAddress } = req.body;
         const userId = req.user.id;
