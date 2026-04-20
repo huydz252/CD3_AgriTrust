@@ -5,7 +5,7 @@ const pool = require('../../../db.js'); // Thay bằng đường dẫn đến fi
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
     clientSecret: process.env.CLIENT_SECRET,
-    callbackURL: "/auth/google/callback"
+    callbackURL: process.env.CALLBACK_URL
   },
   async (accessToken, refreshToken, profile, done) => {
     try {

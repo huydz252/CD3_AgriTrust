@@ -30,31 +30,38 @@ const cartController = {
     
     addToCart : async (req, res) => {
         const { productId } = req.body;
-        const userId = req.user.id;
+        // Đảm bảo userId tồn tại (tránh crash app nếu chưa login)
+        const userId = req.user ? req.user.id : null;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập!' });
+        }
 
         try {
-            //check sp da ton tai chua
-            const [existing] = await pool.query(
-                'SELECT * from cart WHERE user_id = ? AND product_id = ?', 
+            const [rows] = await pool.query(
+                'SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?', 
                 [userId, productId]
             );
             
-            if(existing.length == 0){
+            if (rows.length === 0) {
                 await pool.query(
                     'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)',
                     [userId, productId, 1] 
                 );
-            }else{
+            } else {
                 await pool.query(
                     'UPDATE cart SET quantity = quantity + 1 WHERE id = ?',
-                    [existing[0].id]
+                    [rows[0].id]
                 );
             }
+
+            return res.json({ success: true, message: 'Đã thêm vào giỏ hàng thành công!' });
+
         } catch (error) {
-            console.error("Gặp lỗi: ", error)
-            res.status(500).send("Lỗi khi thêm sản phẩm vào giỏ")
+            console.error("Gặp lỗi tại addToCart: ", error);
+            return res.status(500).json({ success: false, message: "Lỗi hệ thống khi thêm vào giỏ" });
         }
-    }, 
+    },
     
     updateQuantity: async (req, res) => {
         const { cart_id, quantity } = req.body;

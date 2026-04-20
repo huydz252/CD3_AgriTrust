@@ -1,3 +1,41 @@
+ //buton add to cart: fetch cho nó mượt
+function addToCart(productId) {
+    fetch('/user/cart/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ productId: productId }) // Gửi productId dưới dạng JSON
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hiện thông báo xanh mướt
+            Swal.fire({
+                title: 'Thành công!',
+                text: data.message,
+                icon: 'success',
+                timer: 1500,
+                showConfirmButton: false
+            });
+        } else {
+            // Hiện thông báo lỗi hoặc yêu cầu đăng nhập
+            Swal.fire({
+                title: 'Opps!',
+                text: data.message,
+                icon: 'warning'
+            });
+            if (data.message === 'Vui lòng đăng nhập!') {
+                setTimeout(() => window.location.href = '/auth/google', 1500);
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Lỗi:', error);
+        alert('Có lỗi xảy ra, vui lòng thử lại!');
+    });
+}
+
 function updateFinalTotal() {
     let total = 0;
     document.querySelectorAll('.cart-item').forEach(row => {

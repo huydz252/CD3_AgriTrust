@@ -72,11 +72,11 @@
                             <a href="/api/history/<%= p.id %>" class="btn btn-trace fw-bold py-2">
                                 <i class="bi bi-shield-check-fill me-2"></i> Truy xuất nguồn gốc
                             </a>
-                            <form action="/user/cart/add" method="POST">
+                            <form>
                             <input type="hidden" name="productId" value="<%= p.id %>">
                             <div class="d-grid gap-2 btn-add-to-cart" style="padding: 10px 0;">
                                 <% if (user) { %>
-                                    <button type="submit" class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2">
+                                    <button type="button" onclick="addToCart('<%= p.id %>')" class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2">
                                         <i class="bi bi-cart-plus"></i> Thêm vào giỏ
                                     </button>
                                 <% } else { %>
@@ -169,8 +169,10 @@
     }
     %>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/sidebar.js"></script> </body>
+    <script src="/js/sidebar.js"></script> 
+    <script src="/js/updateCart.js"></script>
     <script>
         const form = document.getElementById('formCreateProduct');
         const btn = document.getElementById('btnSubmit');
@@ -179,5 +181,6 @@
             btn.disabled = true;
         });
     </script>
+
 </body>
 </html>
