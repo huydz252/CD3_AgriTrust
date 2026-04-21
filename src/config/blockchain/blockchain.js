@@ -9,7 +9,6 @@ async function getContract() {
     try {
         const signer = await provider.getSigner();
         
-        // Sử dụng contractABI vừa nạp từ file JSON
         const contract = new ethers.Contract(contractAddress, contractABI, signer);
         
         return contract;

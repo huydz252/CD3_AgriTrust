@@ -15,7 +15,7 @@ const authController = {
         req.logout((err) => {
             if (err) { return next(err); }
             req.session.destroy(() => {
-                res.clearCookie('connect.sid'); // Xóa cookie phiên làm việc
+                res.clearCookie('connect.sid'); 
                 res.redirect('/api/products');
             });
         });

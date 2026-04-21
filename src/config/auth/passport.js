@@ -1,6 +1,6 @@
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const pool = require('../../../db.js'); // Thay bằng đường dẫn đến file kết nối MySQL của Huy
+const pool = require('../../../db.js');
 
 passport.use(new GoogleStrategy({
     clientID: process.env.CLIENT_ID,
@@ -33,12 +33,10 @@ passport.use(new GoogleStrategy({
   }
 ));
 
-// Ghi ID người dùng vào Session (để duy trì đăng nhập)
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
 
-// Đọc thông tin người dùng từ ID trong Session mỗi khi tải trang
 passport.deserializeUser(async (id, done) => {
     try {
         const [rows] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);

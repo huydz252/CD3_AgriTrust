@@ -85,9 +85,9 @@ const productController = {
 
             const adminAddress = process.env.ADMIN_WALLET;
 
-            //QR Code
-            const myIP = "172.21.224.1"; 
-            const qrUrl = `http://${myIP}:3000/api/history/${id}`;
+            // qr
+            const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+            const qrUrl = `${baseUrl}/api/history/${id}`;
             const qrImage = await QRCode.toDataURL(qrUrl);
 
             // render
