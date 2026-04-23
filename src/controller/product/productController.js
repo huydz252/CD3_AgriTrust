@@ -35,14 +35,15 @@ const productController = {
 
     createProduct: async (req, res) => {
         try {
-            const { id, name, origin, status, price, image_url, description} = req.body;
+            const { id, name, origin, status, price, image_url, description, lat, lng} = req.body;
             const contract = await getContract(); 
         
-            const tx = await contract.createProduct(Number(id), name, origin || "Chưa xác định", Number(status));
+            //blcokchain lưu: id, tên, nguồn gốc, trạng thái khởi tạo, tọa độ khởi tạo
+            const tx = await contract.createProduct(Number(id), name, origin || "Chưa xác định", lat, lng, Number(status));
             await tx.wait(); 
             await db.query(
-                'INSERT INTO products (name, price, image_url, description, blockchain_id) VALUES (?, ?, ?, ?, ?)',
-                [name, price, image_url, description, id]
+                'INSERT INTO products (name, price, image_url, description, blockchain_id, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                [name, price, image_url, description, id, lat, lng]
             );
 
             res.redirect("/api/products");
@@ -52,61 +53,77 @@ const productController = {
     },
 
     getProductHistory: async (req, res) => {
-        try {
-            const id = req.params.id;
-            const contract = await getContract();
-            
-            const [history, productDetail, mysqlRows] = await Promise.all([
-                contract.getHistory(id),
-                contract.getProductDetail(id),
-                db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
-            ]);
+    try {
+        // 1. Ép kiểu ID thật chặt để tránh bị dính chuỗi ký tự lạ từ URL
+        const id = req.params.id; 
+        if (isNaN(id)) throw new Error("ID sản phẩm không hợp lệ");
 
-            // định dạng lại Timeline từ Blockchain
-            const formattedTimeline = history.map(h => ({
-                status: Number(h.status),
-                location: h.location,
-                description: h.description,
-                timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'),
-                performer: h.performer
-            }));
+        const contract = await getContract();
+        
+        // 2. Thực hiện truy vấn đồng thời. Dùng BigInt cho Blockchain để khớp uint256.
+        // Chú ý: mysql2/promise trả về [rows, fields], nên dùng destructuring [rows]
+        const [history, productDetail, [rows]] = await Promise.all([
+            contract.getHistory(BigInt(id)),
+            contract.getProductDetail(BigInt(id)),
+            db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
+        ]);
+        console.log('check history: ', history)
+        console.log('check productDetail: ', productDetail)
+        console.log('check [rows]: ', [rows])
 
-            // gộp thông tin: Ưu tiên lấy Ảnh và Mô tả chi tiết từ MySQL
-            const extraInfo = mysqlRows[0][0]; 
-            const product = {
-                id: productDetail.id.toString(),
-                name: productDetail.name,
-                origin: productDetail.origin,
-                currentStatus: Number(productDetail.currentStatus),
-                image: extraInfo ? extraInfo.image_url : '/images/system/default.jpg',
-                fullDescription: extraInfo ? extraInfo.description : 'Đang cập nhật dữ liệu...',
-                price: extraInfo ? extraInfo.price : '0'
-            };
+        // 3. Định dạng Timeline từ Blockchain
+        const formattedTimeline = history.map(h => ({
+            status: Number(h.status),
+            location: h.location,
+            latitude: h.latitude,   
+            longitude: h.longitude, 
+            description: h.description,
+            timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'),
+            performer: h.performer
+        }));
 
-            const adminAddress = process.env.ADMIN_WALLET;
+        // 4. Lấy dữ liệu từ dòng đầu tiên của MySQL (rows là mảng các dòng)
+        const productFromDb = rows && rows.length > 0 ? rows[0] : null;
 
-            // qr
-            const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-            const qrUrl = `${baseUrl}/api/history/${id}`;
-            const qrImage = await QRCode.toDataURL(qrUrl);
+        // 5. Tạo Object sản phẩm hoàn chỉnh để render
+        const product = {
+            id: productDetail.id.toString(),
+            name: productDetail.name,
+            origin: productDetail.origin,
+            currentStatus: Number(productDetail.currentStatus),
+            // Bốc đúng tên cột từ MySQL
+            image: productFromDb ? productFromDb.image_url : '/images/system/default.jpg',
+            fullDescription: productFromDb ? productFromDb.description : 'Đang cập nhật dữ liệu...',
+            price: productFromDb ? productFromDb.price : '0'
+        };
 
-            // render
-            res.render('product/productHistory', { 
-                product: product, 
-                list: formattedTimeline,
-                qrCode: qrImage,
-                adminAddress: adminAddress,
-                isAdmin: true 
-            });
+        console.log('check formattedTimeline: ', formattedTimeline)
 
-        } catch (error) {
-            console.error("Lỗi Controller tại getProductHistory:", error);
-            res.status(500).render('error', { 
-                message: "Không thể truy xuất nguồn gốc sản phẩm này.",
-                error: error.message 
-            });
-        }
-    },
+        const adminAddress = process.env.ADMIN_WALLET || "";
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const qrUrl = `${baseUrl}/api/history/${id}`;
+        const qrImage = await QRCode.toDataURL(qrUrl);
+
+        res.render('product/productHistory', { 
+            product: product, 
+            list: formattedTimeline,
+            qrCode: qrImage,
+            adminAddress: adminAddress,
+            isAdmin: true 
+        });
+
+    } catch (error) {
+        console.error("Lỗi Controller tại getProductHistory:", error);
+        
+        // Trả về trang lỗi hoặc send text nếu không có view 'error'
+        res.status(500).send(`
+            <h2>Lỗi hệ thống</h2>
+            <p>Không thể truy xuất nguồn gốc sản phẩm này.</p>
+            <p style="color: red;">Chi tiết: ${error.reason || error.message}</p>
+            <a href="/api/products">Quay lại danh sách</a>
+        `);
+    }
+},
 
     syncStatusWithMySQL: async (req, res) => {
     try {

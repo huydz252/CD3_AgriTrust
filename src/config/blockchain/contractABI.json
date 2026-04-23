@@ -18,6 +18,16 @@
       },
       {
         "internalType": "string",
+        "name": "_lat",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_lng",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
         "name": "_description",
         "type": "string"
       }
@@ -42,6 +52,16 @@
       {
         "internalType": "string",
         "name": "_origin",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_lat",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_lng",
         "type": "string"
       },
       {
@@ -137,6 +157,16 @@
           },
           {
             "internalType": "string",
+            "name": "latitude",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "longitude",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
             "name": "description",
             "type": "string"
           },
@@ -228,6 +258,16 @@
       {
         "internalType": "string",
         "name": "location",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "latitude",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "longitude",
         "type": "string"
       },
       {

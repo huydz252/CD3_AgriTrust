@@ -3,7 +3,9 @@
 <head>
     <%- include('../partials/head') %>
     <title>Truy xuất nguồn gốc - #<%= product.id %></title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
+
 <body class="bg-light">
     <%- include('../partials/header') %>
     <div id="mySidebar" class="sidebar">
@@ -48,7 +50,7 @@
                                 <hr class="my-4 opacity-25">
                                 <p class="text-secondary mb-4 fst-italic"><%= product.fullDescription %></p>
 
-                                <div class="row g-3">
+                                <div class="row g-3 mb-4">
                                     <div class="col-6 col-md-4">
                                         <small class="text-muted d-block text-uppercase small fw-bold">Nguồn gốc</small>
                                         <div class="fw-bold"><i class="bi bi-geo-alt-fill text-danger"></i> <%= product.origin %></div>
@@ -63,23 +65,23 @@
                                         <small class="text-muted d-block text-uppercase small fw-bold">Giá niêm yết</small>
                                         <div class="fw-bold text-primary fs-5"><%= Number(product.price).toLocaleString('vi-VN') %> VNĐ</div>
                                     </div>
-                                    <form>
-                                        <input type="hidden" name="productId" value="<%= product.id %>">
-                                        <div class="d-grid gap-2 btn-add-to-cart" style="padding: 10px 0;">
-                                            <% if (user) { %>
-                                                <button type="button" onclick="addToCart('<%= product.id %>')" class="btn btn-outline-success rounded-pill d-flex align-items-center justify-content-center gap-2"
-                                                >
-                                                    <i class="bi bi-cart-plus"></i> 
-                                                    Thêm vào giỏ
-                                                </button>
-                                            <% } else { %>
-                                                <a href="/auth/google" class="btn btn-outline-secondary rounded-pill">
-                                                    Đăng nhập để mua
-                                                </a>
-                                            <% } %>
-                                        </div>
-                                    </form>
                                 </div>
+
+                                <form>
+                                    <input type="hidden" name="productId" value="<%= product.id %>">
+                                    <div class="d-grid gap-2 btn-add-to-cart" style="padding: 10px 0;">
+                                        <% if (user) { %>
+                                            <button type="button" onclick="addToCart('<%= product.id %>')" class="btn btn-success rounded-pill py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                                <i class="bi bi-cart-plus-fill"></i> 
+                                                Thêm vào giỏ hàng
+                                            </button>
+                                        <% } else { %>
+                                            <a href="/auth/google" class="btn btn-outline-secondary rounded-pill py-2">
+                                                <i class="bi bi-google me-2"></i> Đăng nhập để mua
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -98,6 +100,12 @@
                         <i class="bi bi-shield-check-fill text-success fs-2 me-3"></i> 
                         Lịch sử hành trình Blockchain
                     </h4>
+
+                    <button class="btn btn-outline-success rounded-pill px-4 shadow-sm fw-bold" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalMap"
+                        onclick="initMap()"> <i class="bi bi-map-fill me-2"></i> Xem bản đồ hành trình
+                    </button>
                     
                     <div class="timeline">
                         <% if (list && list.length > 0) { %>
@@ -144,6 +152,8 @@
         </div>
     </div>
 
+
+    <!-- modal updateStage -->
     <div class="modal fade" id="modalUpdate" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
@@ -155,27 +165,45 @@
                     <input type="hidden" name="id" value="<%= product.id %>">
                     
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Trạng thái tiếp theo</label>
-                        <select name="status" class="form-select rounded-pill shadow-sm">
+                        <label class="form-label fw-bold small text-muted">TRẠNG THÁI TIẾP THEO</label>
+                        <select name="status" class="form-select rounded-pill shadow-sm border-success">
                             <option value="1">🧺 Đã thu hoạch</option>
                             <option value="2">🚚 Đang vận chuyển</option>
                             <option value="3">📦 Sẵn sàng bán (Kho)</option>
                             <option value="4">✅ Đã bán lẻ</option>
                         </select>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Vị trí cập nhật</label>
-                        <input type="text" name="location" class="form-control rounded-pill shadow-sm" placeholder="VD: Kho trung chuyển Gia Lai" required> 
+                        <label class="form-label fw-bold small text-muted">ĐỊA ĐIỂM HIỆN TẠI</label>
+                        <input type="text" name="location" class="form-control rounded-pill shadow-sm" placeholder="VD: Cửa hàng VinMart, Đà Nẵng" required> 
                     </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">VĨ ĐỘ (LATITUDE)</label>
+                            <input type="text" name="lat" class="form-control rounded-pill shadow-sm border-primary-subtle" placeholder="16.0544" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">KINH ĐỘ (LONGITUDE)</label>
+                            <input type="text" name="lng" class="form-control rounded-pill shadow-sm border-primary-subtle" placeholder="108.2022" required>
+                        </div>
+                    </div>
+
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Ghi chú nhật ký</label>
-                        <textarea name="description" class="form-control shadow-sm" rows="3" style="border-radius: 15px;" placeholder="Mô tả chi tiết hoạt động..." required></textarea>
+                        <label class="form-label fw-bold small text-muted">GHI CHÚ CHI TIẾT</label>
+                        <textarea name="description" class="form-control shadow-sm" rows="3" style="border-radius: 15px;" placeholder="Ví dụ: Kiểm tra chất lượng và nhập kho chi nhánh..." required></textarea>
+                    </div>
+
+                    <div class="alert alert-info py-2 mb-0" style="border-radius: 12px; font-size: 0.85rem;">
+                        <i class="bi bi-info-circle-fill me-1"></i> 
+                        Tọa độ này sẽ dùng để vẽ mốc tiếp theo trên bản đồ hành trình.
                     </div>
                 </div>
                 <div class="modal-footer border-0 pb-4 justify-content-center">
                     <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
-                    <button type="button" id="btnConfirmUpdate" class="btn btn-success rounded-pill px-5 shadow" onclick="updateStageOnChain()">
-                        <i class="bi bi-pen-fill me-2"></i> Ký tên & Xác nhận
+                    <button type="button" id="btnConfirmUpdate" class="btn btn-success rounded-pill px-5 shadow fw-bold" onclick="updateStageOnChain()">
+                        <i class="bi bi-pen-fill me-2"></i> KÝ & CẬP NHẬT
                     </button>
                 </div>
             </div>
@@ -195,11 +223,37 @@
     }
     %>
 
+    <div class="modal fade" id="modalMap" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="fw-bold text-success"><i class="bi bi-geo-alt-fill me-2"></i>Bản đồ hành trình thực tế</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-3">
+                    <div id="map" style="height: 500px; width: 100%; border-radius: 15px;"></div>
+                    <div class="mt-3 text-center">
+                        <p class="small text-muted mb-0">
+                            <i class="bi bi-info-circle me-1"></i> 
+                            Dữ liệu tọa độ được truy xuất và xác thực trực tiếp từ mạng Blockchain.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.PRODUCT_HISTORY_DATA = <%- JSON.stringify(list) %>;
+    </script>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/sidebar.js"></script> </body>
     <script src="/js/web3-handler.js"></script>
     <script src="/js/updateCart.js"></script>
+    <script src="/js/productHistory.js"></script>
 </body>
 </html>
