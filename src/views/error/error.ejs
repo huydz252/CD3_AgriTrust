@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <%- include('../partials/head') %>
+    <title>Hệ thống có lỗi - AgriTrust</title>
+</head>
+<body class="bg-light d-flex align-items-center" style="min-height: 100vh;">
+    <div class="container text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="mb-4">
+                    <% if (status === 404) { %>
+                        <i class="bi bi-exclamation-diamond text-warning" style="font-size: 6rem;"></i>
+                    <% } else { %>
+                        <i class="bi bi-shield-slash text-danger" style="font-size: 6rem;"></i>
+                    <% } %>
+                </div>
+                
+                <h1 class="display-1 fw-bold"><%= status %></h1>
+                <h3 class="mb-3"><%= message %></h3>
+                <p class="text-muted mb-4">Rất tiếc, đã có sự cố xảy ra. Vui lòng quay lại trang chủ hoặc liên hệ quản trị viên.</p>
+                
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <a href="/api/products" class="btn btn-success btn-lg px-4 rounded-pill">
+                        <i class="bi bi-house-door me-2"></i> Về trang chủ
+                    </a>
+                </div>
+                
+                <% if (process.env.NODE_ENV === 'development' && error) { %>
+                    <div class="mt-5 text-start alert alert-secondary overflow-auto" style="max-height: 200px;">
+                        <small><code><%= error %></code></small>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

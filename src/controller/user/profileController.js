@@ -8,13 +8,21 @@ const profileController = {
         try {
             const [user] = await pool.query(query, [user_id])
             if(user.length == 0) {
-                res.status(404).send('Không tìm thấy người dùng!!')
+                res.status(404).render('error/error', {
+                status: 404,
+                message: 'không tìm thấy người dùng!',
+                error: null
+            });
             }
             // console.log("check: ", user)
             res.render('user/profile', {user: user[0]})
         } catch (error) {
             console.error("Lỗi: ", error);
-            res.status(500).send('Lỗi khi truy cập profile!')
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -25,13 +33,21 @@ const profileController = {
         try {
             const [user] = await pool.query(query, [display_name, phone, address, user_id])
             if(user.length == 0) {
-                res.status(404).send('Không tìm thấy người dùng!!')
+                res.status(404).render('error/error', {
+                status: 404,
+                message: 'Không tìm thấy người dùng!',
+                error: null
+            });
             }
             console.log("check: ", user)
             res.redirect('/user/profile')
         } catch (error) {
             console.error("Lỗi: ", error);
-            res.status(500).send('Lỗi khi truy cập profile!')
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 

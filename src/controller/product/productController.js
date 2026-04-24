@@ -20,7 +20,7 @@ const productController = {
                     id: p.id.toString(),
                     name: p.name,
                     origin: p.origin,
-                    status: Number(p.currentStatus),
+                    currentStatus: Number(p.currentStatus),
                     exists: p.exists,
                     price: extraInfo ? extraInfo.price : "Liên hệ",
                     image: extraInfo ? extraInfo.image_url : "/images/system/default.jpg",
@@ -29,7 +29,11 @@ const productController = {
             })
             res.render('product/productList', {list: results, adminAddress: adminAddress}  );
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -48,30 +52,31 @@ const productController = {
 
             res.redirect("/api/products");
         } catch (error) {
-            res.status(500).json({ success: false, error: error.message });
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
     getProductHistory: async (req, res) => {
     try {
-        // 1. Ép kiểu ID thật chặt để tránh bị dính chuỗi ký tự lạ từ URL
         const id = req.params.id; 
         if (isNaN(id)) throw new Error("ID sản phẩm không hợp lệ");
 
         const contract = await getContract();
         
-        // 2. Thực hiện truy vấn đồng thời. Dùng BigInt cho Blockchain để khớp uint256.
-        // Chú ý: mysql2/promise trả về [rows, fields], nên dùng destructuring [rows]
         const [history, productDetail, [rows]] = await Promise.all([
             contract.getHistory(BigInt(id)),
             contract.getProductDetail(BigInt(id)),
             db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
         ]);
-        console.log('check history: ', history)
-        console.log('check productDetail: ', productDetail)
-        console.log('check [rows]: ', [rows])
+        // console.log('check history: ', history)
+        // console.log('check productDetail: ', productDetail)
+        // console.log('check [rows]: ', [rows])
 
-        // 3. Định dạng Timeline từ Blockchain
+        //định dạng Timeline từ Blockchain
         const formattedTimeline = history.map(h => ({
             status: Number(h.status),
             location: h.location,
@@ -82,22 +87,19 @@ const productController = {
             performer: h.performer
         }));
 
-        // 4. Lấy dữ liệu từ dòng đầu tiên của MySQL (rows là mảng các dòng)
         const productFromDb = rows && rows.length > 0 ? rows[0] : null;
 
-        // 5. Tạo Object sản phẩm hoàn chỉnh để render
         const product = {
             id: productDetail.id.toString(),
             name: productDetail.name,
             origin: productDetail.origin,
             currentStatus: Number(productDetail.currentStatus),
-            // Bốc đúng tên cột từ MySQL
             image: productFromDb ? productFromDb.image_url : '/images/system/default.jpg',
             fullDescription: productFromDb ? productFromDb.description : 'Đang cập nhật dữ liệu...',
             price: productFromDb ? productFromDb.price : '0'
         };
 
-        console.log('check formattedTimeline: ', formattedTimeline)
+        // console.log('check formattedTimeline: ', formattedTimeline)
 
         const adminAddress = process.env.ADMIN_WALLET || "";
         const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
@@ -116,29 +118,32 @@ const productController = {
         console.error("Lỗi Controller tại getProductHistory:", error);
         
         // Trả về trang lỗi hoặc send text nếu không có view 'error'
-        res.status(500).send(`
-            <h2>Lỗi hệ thống</h2>
-            <p>Không thể truy xuất nguồn gốc sản phẩm này.</p>
-            <p style="color: red;">Chi tiết: ${error.reason || error.message}</p>
-            <a href="/api/products">Quay lại danh sách</a>
-        `);
+        res.status(500).render('error/error', {
+            status: 500,
+            message: 'Mất kết nối với Server!',
+            error: null
+        });
     }
 },
 
     syncStatusWithMySQL: async (req, res) => {
-    try {
-        const { id, status } = req.body;
-        
-        // Cập nhật trạng thái mới nhất vào MySQL dựa trên blockchain_id
-        const sql = 'UPDATE products SET status = ? WHERE blockchain_id = ?';
-        await db.query(sql, [status, id]);
+        try {
+            const { id, status } = req.body;
+            
+            // Cập nhật trạng thái mới nhất vào MySQL dựa trên blockchain_id
+            const sql = 'UPDATE products SET status = ? WHERE blockchain_id = ?';
+            await db.query(sql, [status, id]);
 
-        res.json({ success: true, message: "Đồng bộ thành công" });
-    } catch (error) {
-        console.error("Lỗi đồng bộ MySQL:", error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-},
+            res.json({ success: true, message: "Đồng bộ thành công" });
+        } catch (error) {
+            console.error("Lỗi đồng bộ MySQL:", error);
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
+        }
+    },
 
 
 };

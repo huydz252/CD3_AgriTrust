@@ -16,8 +16,15 @@ body {
 }
 
 /* Đẩy nội dung xuống để không bị Header che mất */
+/* p-top mặc định trên đt: */
 body {
-     /* Điều chỉnh con số này dựa trên chiều cao thực tế của Header */
+    padding-top: 130px /* Điều chỉnh con số này dựa trên chiều cao thực tế của Header */
+}
+/* p-top mặc định trên pc,laptop: */
+@media(min-width: 992px){
+    body{
+        padding-top: 100px;
+    }
 }
 
 /* --- Layout Components --- */

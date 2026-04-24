@@ -26,9 +26,10 @@ const authController = {
         if (req.isAuthenticated()) {
             return next();
         }
-        res.status(401).json({ 
-            success: false, 
-            message: "Bạn cần đăng nhập để thực hiện chức năng này" 
+        res.status(401).render('error/error', {
+            status: 401,
+            message: "Bạn cần đăng nhập để thực hiện chức năng này",
+            error: null
         });
     },
 
@@ -37,7 +38,11 @@ const authController = {
         if (req.isAuthenticated() && req.user.role === 'admin') {
             return next();
         }
-        res.status(403).send("Truy cập bị từ chối: Bạn không có quyền Admin");
+        res.status(403).render('error/error', {
+            status: 403,
+            message: 'Truy cập bị từ chối: Bạn không có quyền Admin!',
+            error: null
+        });
     }
 };
 

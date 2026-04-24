@@ -1,5 +1,6 @@
 const  pool  = require("../../../db");
 const authController = require('../../controller/auth/authController')
+const getContract = require('../../config/blockchain/blockchain')
 const orderServive = require('../../service/orderService')
 
 const cartController = {
@@ -24,17 +25,45 @@ const cartController = {
             })
         } catch (error) {
             console.error("gặp lỗi: ", error)
-            res.status(500).send("Lỗi khi render giỏ hàng")
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }  
     },
     
     addToCart : async (req, res) => {
         const { productId } = req.body;
-        // Đảm bảo userId tồn tại (tránh crash app nếu chưa login)
         const userId = req.user ? req.user.id : null;
 
         if (!userId) {
-            return res.status(401).json({ success: false, message: 'Vui lòng đăng nhập!' });
+            return res.status(401).render('error/error', {
+                status: 401,
+                message: 'Gặp lỗi khi thêm sản phẩm, vui lòng thử lại sau',
+                error: null
+            });
+        }
+        
+        //phòng khi người dùng F12 để xóa disabled của button
+        const [rows] = await pool.query('SELECT blockchain_id FROM products WHERE id = ?', [productId]);
+        if(rows.length == 0) {
+            res.status(404).render('error/error', {
+                status: 401,
+                message: 'Không tìm thấy sản phẩm!',
+                error: null
+            });
+        }
+        const bcId = rows[0].blockchain_id;
+        const contract = await getContract();
+        const productDetails = await contract.getProductDetail(bcId);
+        const currentStatus = Number(productDetails[3]);
+        if(currentStatus !== 3){
+            res.status(400).render('error/error', {
+                status: 400,
+                message: 'Sản phẩm chưa thể thêm vào giỏ',
+                error: null
+            })
         }
 
         try {
@@ -59,7 +88,11 @@ const cartController = {
 
         } catch (error) {
             console.error("Gặp lỗi tại addToCart: ", error);
-            return res.status(500).json({ success: false, message: "Lỗi hệ thống khi thêm vào giỏ" });
+            return res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
     
@@ -72,7 +105,11 @@ const cartController = {
             res.json({ success: true });
         } catch (error) {
             console.log("Lỗi: ",error)
-            res.status(500).json({ success: false, message: error.message });
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -85,7 +122,11 @@ const cartController = {
             res.json({ success: true });
         } catch (error) {
             console.log("Lỗi: " ,error)
-            res.status(500).json({ success: false, message: error.message });
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -100,9 +141,10 @@ const cartController = {
             });
         } catch (error) {
             console.error("Lỗi lấy mã đơn hàng:", error);
-            return res.status(500).json({
-                success: false,
-                message: "Không thể tạo mã đơn hàng lúc này"
+            return res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
             });
         }
     }, 
@@ -143,12 +185,20 @@ const cartController = {
                 await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
                 await connection.commit()
             }
-            res.status(200).json({success: true, message: "Đặt hàng thành công"})
+            res.status(200).render('error/error', {
+                status: 200,
+                message: 'Không thể tạo đơn hàng, vui lòng thử lại sau!',
+                error: null
+            });
         } catch (error) {
             // Nếu có bất kỳ lỗi nào, hủy bỏ toàn bộ các lệnh INSERT ở trên
             await connection.rollback();
             console.error("Lỗi đặt hàng: ", error);
-            res.status(500).json({ success: false, message: "Lỗi hệ thống khi tạo đơn hàng" });
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
     
@@ -169,7 +219,11 @@ const cartController = {
             });
         } catch (error) {
             console.error("Lỗi lấy sản phẩm đang mua:", error);
-            res.status(500).send("Lỗi hệ thống");
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -179,7 +233,11 @@ const cartController = {
             const [orders] = await pool.query('SELECT * FROM orders WHERE id = ?', [orderId]);
 
             if (!orders || orders.length === 0) {
-                return res.status(404).send("Không tìm thấy đơn hàng");
+                return res.status(404).render('error/error', {
+                    status: 404,
+                    message: 'Không tìm thấy chi tiết đơn hàng!',
+                    error: null
+                });
             }
 
             //lay data don hang 
@@ -222,7 +280,11 @@ const cartController = {
             });
         } catch (error) {
             console.error(error);
-            res.status(500).send("Lỗi tải chi tiết đơn hàng");
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
         }
     },
 
@@ -232,7 +294,6 @@ const cartController = {
             'SELECT * FROM orders WHERE user_id = ? AND status = "completed" ORDER BY created_at DESC', 
             [userId]
         );
-        console.log('check completed: ', orders[0])
         res.render('user/history', { orders: orders[0], user: req.user });
     },
 
