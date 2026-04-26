@@ -67,16 +67,26 @@ const cartController = {
         }
 
         try {
+            //check stock trước:
+            const stock = await pool.query('SELECT stock FROM products WHERE id = ?', [productId])
+            if(Number(stock[0][0].stock) == 0){
+                return res.json({ success: false, message: 'Sản phẩm này đã hết hàng!' });
+            }
+
+            //check xem đã có sp này trong cart chưa
             const [rows] = await pool.query(
                 'SELECT id, quantity FROM cart WHERE user_id = ? AND product_id = ?', 
                 [userId, productId]
             );
             
+            //chưa thì thêm mới
             if (rows.length === 0) {
                 await pool.query(
                     'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)',
                     [userId, productId, 1] 
                 );
+            
+                //có rồi thì thêm quantity
             } else {
                 await pool.query(
                     'UPDATE cart SET quantity = quantity + 1 WHERE id = ?',
@@ -185,11 +195,8 @@ const cartController = {
                 await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
                 await connection.commit()
             }
-            res.status(200).render('error/error', {
-                status: 200,
-                message: 'Không thể tạo đơn hàng, vui lòng thử lại sau!',
-                error: null
-            });
+            res.status(200).json({success: true})
+            
         } catch (error) {
             // Nếu có bất kỳ lỗi nào, hủy bỏ toàn bộ các lệnh INSERT ở trên
             await connection.rollback();

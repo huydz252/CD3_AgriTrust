@@ -12,7 +12,7 @@ const productController = {
 
             const adminAddress = process.env.ADMIN_WALLET;
 
-            const [mysqlData] = await db.query('SELECT blockchain_id, price, image_url, description FROM products');
+            const [mysqlData] = await db.query('SELECT blockchain_id, price, image_url, description, stock FROM products');
 
             const results = products.map( p => {
                 const extraInfo = mysqlData.find(m => m.blockchain_id == p.id.toString())
@@ -24,9 +24,12 @@ const productController = {
                     exists: p.exists,
                     price: extraInfo ? extraInfo.price : "Liên hệ",
                     image: extraInfo ? extraInfo.image_url : "/images/system/default.jpg",
-                    description: extraInfo ? extraInfo.description : "Không tìm thấy mô tả sản phẩm"
+                    description: extraInfo ? extraInfo.description : "Không tìm thấy mô tả sản phẩm",
+                    stock: extraInfo ? extraInfo.stock : 0
                 }
             })
+
+            console.log('check result: ', results)
             res.render('product/productList', {list: results, adminAddress: adminAddress}  );
         } catch (error) {
             res.status(500).render('error/error', {
@@ -96,7 +99,8 @@ const productController = {
             currentStatus: Number(productDetail.currentStatus),
             image: productFromDb ? productFromDb.image_url : '/images/system/default.jpg',
             fullDescription: productFromDb ? productFromDb.description : 'Đang cập nhật dữ liệu...',
-            price: productFromDb ? productFromDb.price : '0'
+            price: productFromDb ? productFromDb.price : '0',
+            stock: productFromDb ? productFromDb.stock : '0'
         };
 
         // console.log('check formattedTimeline: ', formattedTimeline)

@@ -4,6 +4,14 @@ const profileController = {
 
     getProfile: async (req, res) => {
         const user_id = req.user.id;
+        if(user_id === null){
+            res.status(401).render('error/error', {
+                status: 401,
+                message: "Bạn cần đăng nhập để thực hiện chức năng này!",
+                error: null
+            });
+        }
+        
         const query = "SELECT * FROM users WHERE id = ?"
         try {
             const [user] = await pool.query(query, [user_id])
@@ -28,6 +36,13 @@ const profileController = {
 
     updateProfile: async (req, res) => {
         const user_id = req.user.id;
+        if(user_id === null){
+            res.status(401).render('error/error', {
+                status: 401,
+                message: "Bạn cần đăng nhập để thực hiện chức năng này!",
+                error: null
+            });
+        }
         const {display_name, phone, address} = req.body
         const query = "UPDATE users SET display_name = ?, phone = ?, address = ? WHERE id = ?"
         try {
@@ -55,6 +70,14 @@ const profileController = {
         const { walletAddress } = req.body;
         const userId = req.user.id;
 
+        if(userId === null){
+            res.status(401).render('error/error', {
+                status: 401,
+                message: "Bạn cần đăng nhập để thực hiện chức năng này!",
+                error: null
+            });
+        }
+
         //check luôn id để tránh trường hợp bị kẹt, k thể truy cập vào ví của chính mình (hiếm)
         const checkExistingUser = 'SELECT * FROM users WHERE wallet_address = ? AND id != ?' 
         const updateWalletAddress = 'UPDATE users SET wallet_address = ? WHERE id = ?'
@@ -73,6 +96,35 @@ const profileController = {
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
+    }, 
+    
+    removeWallet : async (req, res) => {
+        const userId = req.user.id;
+
+        if(userId === null){
+            res.status(401).render('error/error', {
+                status: 401,
+                message: "Bạn cần đăng nhập để thực hiện chức năng này!",
+                error: null
+            });
+        }
+
+        const query1 = 'SELECT wallet_address FROM users WHERE id = ?';
+        const query2 = 'UPDATE users SET wallet_address = ? WHERE id = ?';
+
+        try {
+            const status1 = await pool.query(query1, [userId]);
+            // console.log('check query: ', status1[0][0].wallet_address);
+            const status2 = await pool.query(query2, [null ,userId])
+            res.redirect('/user/profile')
+        } catch (error) {
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
+        }
+        
     }
 }
 module.exports = profileController

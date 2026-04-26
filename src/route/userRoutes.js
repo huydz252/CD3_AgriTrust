@@ -8,6 +8,7 @@ const profileController = require('../controller/user/profileController');
 router.get('/profile', authController.isLoggedIn, profileController.getProfile);
 router.post('/profile/update', authController.isLoggedIn, profileController.updateProfile);
 router.post('/update-wallet',authController.isLoggedIn, profileController.updateWallet);
+router.get('/remove-wallet',authController.isLoggedIn, profileController.removeWallet);
 
 router.get('/cart', authController.isLoggedIn, cartController.showCart)
 

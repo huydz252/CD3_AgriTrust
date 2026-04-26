@@ -28,7 +28,7 @@ const authController = {
         }
         res.status(401).render('error/error', {
             status: 401,
-            message: "Bạn cần đăng nhập để thực hiện chức năng này",
+            message: "Bạn cần đăng nhập để thực hiện chức năng này!",
             error: null
         });
     },

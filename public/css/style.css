@@ -315,6 +315,21 @@ body {
     transition: margin-left 0.2s
 }
 
+/* productHistory */
+/* Ép các cột luôn chiếm 50% và không bị đẩy hàng */
+.row.g-4 > .col-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+
+/* Xử lý khi tên địa phương quá dài (như trong ảnh của Huy) */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+}
+
 
 /* --- Print & Utility --- */
 @media print { 

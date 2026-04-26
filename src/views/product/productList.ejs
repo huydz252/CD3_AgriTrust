@@ -55,9 +55,20 @@
                             <%= p.origin %>
                         </p>
                         
-                        <div class="price-tag mb-3">
-                            <%= typeof p.price === 'number' ? p.price.toLocaleString('vi-VN') : p.price %> <small>VNĐ</small>
-                        </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div class="price-tag text-danger fw-bold fs-5">
+                                    <%= typeof p.price === 'number' ? p.price.toLocaleString('vi-VN') : p.price %> 
+                                    <small class="fs-6 text-uppercase">VNĐ</small>
+                                </div>
+
+                                <div class="stock-tag badge rounded-pill bg-light text-dark border shadow-sm px-3 py-2">
+                                    <i class="bi bi-box-seam me-1 text-success"></i>
+                                    <span class="fw-bold">
+                                        <%= typeof p.stock === 'number' ? p.stock.toFixed(1) : p.stock %>
+                                    </span>
+                                    <small class="text-muted">Kg</small>
+                                </div>
+                            </div>
 
                         <p class="card-text text-secondary mb-4" style="display: -webkit-box;
                                                                         -webkit-line-clamp: 1; /* Giới hạn đúng 1 dòng */
