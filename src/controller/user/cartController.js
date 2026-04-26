@@ -9,7 +9,7 @@ const cartController = {
             
         try {
             const userId = req.user.id
-            const query = "SELECT cart.*, products.name, products.price, products.image_url FROM cart JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?"
+            const query = "SELECT cart.*, products.name, products.price, products.stock, products.image_url FROM cart JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?"
             const [cartItems] = await pool.query(query, [userId])
 
             const bankConfig = {
@@ -17,7 +17,6 @@ const cartController = {
                 account: process.env.BANK_ACCOUNT,
                 template: process.env.BANK_TEMPLATE
             }
-
             res.render('user/cart', {
                 userId,
                 cartItems, 
@@ -40,7 +39,7 @@ const cartController = {
         if (!userId) {
             return res.status(401).render('error/error', {
                 status: 401,
-                message: 'Gặp lỗi khi thêm sản phẩm, vui lòng thử lại sau',
+                message: 'Cần đăng nhập để thực hiện!',
                 error: null
             });
         }
@@ -67,11 +66,7 @@ const cartController = {
         }
 
         try {
-            //check stock trước:
-            const stock = await pool.query('SELECT stock FROM products WHERE id = ?', [productId])
-            if(Number(stock[0][0].stock) == 0){
-                return res.json({ success: false, message: 'Sản phẩm này đã hết hàng!' });
-            }
+            //check stock trước: bên FE xử lí (check trước khi gọi hàm này)
 
             //check xem đã có sp này trong cart chưa
             const [rows] = await pool.query(
@@ -83,16 +78,9 @@ const cartController = {
             if (rows.length === 0) {
                 await pool.query(
                     'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)',
-                    [userId, productId, 1] 
+                    [userId, productId, 0.2] 
                 );
-            
-                //có rồi thì thêm quantity
-            } else {
-                await pool.query(
-                    'UPDATE cart SET quantity = quantity + 1 WHERE id = ?',
-                    [rows[0].id]
-                );
-            }
+            } 
 
             return res.json({ success: true, message: 'Đã thêm vào giỏ hàng thành công!' });
 
@@ -120,6 +108,33 @@ const cartController = {
                 message: 'Mất kết nối với Server!',
                 error: null
             });
+        }
+    },
+
+    getStock : async (req, res) => {
+        const userId = req.user.id;
+        if (!userId) {
+            return res.status(401).render('error/error', {
+                status: 401,
+                message: 'Cần đăng nhập để thực hiện!',
+                error: null
+            });
+        }
+
+        const productId = req.body.productId;
+        const stock = await pool.query('SELECT stock FROM products WHERE id = ?', [productId])
+        //console.log('check stock: ', stock[0][0].stock)
+        if(Number(stock[0][0].stock) != null){
+            res.status(200).json({
+                success: true,
+                message: 'Còn hàng!',
+                stock: Number(stock[0][0].stock)
+            })
+        }else{
+            res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy số lượng của sản phẩm này!!'
+            })
         }
     },
 

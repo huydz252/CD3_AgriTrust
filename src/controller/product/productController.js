@@ -28,8 +28,6 @@ const productController = {
                     stock: extraInfo ? extraInfo.stock : 0
                 }
             })
-
-            console.log('check result: ', results)
             res.render('product/productList', {list: results, adminAddress: adminAddress}  );
         } catch (error) {
             res.status(500).render('error/error', {

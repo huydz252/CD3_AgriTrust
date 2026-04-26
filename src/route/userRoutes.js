@@ -14,6 +14,7 @@ router.get('/cart', authController.isLoggedIn, cartController.showCart)
 
 router.post('/cart/add', authController.isLoggedIn, cartController.addToCart)
 router.post('/cart/update-quantity', authController.isLoggedIn, cartController.updateQuantity)
+router.post('/cart/getStock', authController.isLoggedIn, cartController.getStock)
 router.delete('/cart/remove', authController.isLoggedIn, cartController.removeProduct)
 router.get('/cart/getOrderCode', authController.isLoggedIn, cartController.getOrderCode)
 

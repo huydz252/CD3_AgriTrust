@@ -1,5 +1,21 @@
  //buton add to cart: fetch cho nó mượt
-function addToCart(productId) {
+async function addToCart(productId) {
+
+    // check stock trước khi thêm:
+    const minQty = 0.2; // Số lượng mặc định khi mới thêm
+    
+    // Gọi hàm dùng chung
+    const stockStatus = await checkProductStock(productId, minQty);
+
+    if (!stockStatus.isAvailable) {
+        Swal.fire({
+            title: 'Hết hàng!',
+            text: `Sản phẩm này chỉ còn ${stockStatus.currentStock} kg, không đủ để thêm vào giỏ.`,
+            icon: 'error'
+        });
+        return;
+    }
+    // --------------------
     fetch('/user/cart/add', {
         method: 'POST',
         headers: {
@@ -32,8 +48,37 @@ function addToCart(productId) {
     })
     .catch(error => {
         console.error('Lỗi:', error);
-        alert('Có lỗi xảy ra, vui lòng thử lại!');
+        Swal.fire({
+                title: 'Opps!',
+                text: 'Có lỗi xảy ra, vui lòng thử lại!',
+                icon: 'warning'
+        });
     });
+}
+
+// kiểm tra số stock trước khi thêm vào giỏ or cập nhật giỏ
+async function checkProductStock(productId, requestedQty) {
+    try {
+        const response = await fetch('/user/cart/getStock', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId: productId })
+        });
+        const data = await response.json();
+
+        if (!data.success) {
+            throw new Error(data.message || 'Không thể kiểm tra kho hàng');
+        }
+
+        // Trả về kết quả so sánh: đủ hàng hay không
+        return {
+            isAvailable: data.stock >= requestedQty,
+            currentStock: data.stock
+        };
+    } catch (error) {
+        console.error('Lỗi checkStock:', error);
+        return { isAvailable: false, error: error.message };
+    }
 }
 
 function updateFinalTotal() {
@@ -94,7 +139,13 @@ async function updateQtyOnServer(cart_id, newQty) {
             body: JSON.stringify({ cart_id, quantity: newQty })
         });
         const data = await response.json();
-        if (!data.success) alert('Không thể cập nhật số lượng!');
+        if (!data.success) {
+            Swal.fire({
+                title: 'Opps!',
+                text: 'Hiện tại không thể cập nhật số lượng!!',
+                icon: 'warning'
+            });
+        }
     } catch (err) {
         console.error('Lỗi kết nối:', err);
     }
@@ -102,32 +153,38 @@ async function updateQtyOnServer(cart_id, newQty) {
 
 //sự kiện nút - + 
 document.querySelectorAll('.btn-plus, .btn-minus').forEach(btn => {
-    btn.addEventListener('click', function (){
-        
+    btn.addEventListener('click', async function () {
         const row = this.closest('.cart-item');
         const input = row.querySelector('.input-qty');
         const unitPrice = Number(row.querySelector('.unit-price').dataset.value);
-        const minQty = parseFloat(input.min) || 0.2
-        const step = parseFloat(input.step) || 0.1
+        const productId = row.dataset.product_id;
+        const minQty = parseFloat(input.min) || 0.2;
         let currentQty = parseFloat(input.value) || minQty;
-        
-        if (this.classList.contains('btn-plus')) 
-            currentQty = currentQty + 0.1;
-        else if (currentQty > minQty)  //còn trừ dc thì trừ (> min) 
-            currentQty = currentQty - 0.1;
-        
-        input.value = Number(currentQty.toFixed(1));
-        const rowTotal = unitPrice * currentQty;
-        row.querySelector('.total-item-price').innerText = rowTotal.toLocaleString('vi-VN') + 'đ';
 
-        updateFinalTotal();
-        updateQtyOnServer(row.dataset.cart_id, currentQty);
-        
-        //update orderCode
-        if (typeof window.resetOrderCode === 'function') {
-        window.resetOrderCode();
-    }
-    })  
+        // Hàm phụ để cập nhật UI tránh viết lặp code
+        const updateUI = (qty) => {
+            input.value = Number(qty.toFixed(1));
+            row.querySelector('.total-item-price').innerText = (unitPrice * qty).toLocaleString('vi-VN') + 'đ';
+            updateFinalTotal();
+            updateQtyOnServer(row.dataset.cart_id, Number(qty.toFixed(1)));
+            if (typeof window.resetOrderCode === 'function') window.resetOrderCode();
+        };
+
+        if (this.classList.contains('btn-plus')) {
+            const nextQty = currentQty + 0.1;
+                const stockStatus = await checkProductStock(productId, nextQty);
+
+                if (stockStatus.isAvailable) {
+                    updateUI(nextQty); // Hàm updateUI mình đã viết ở trên
+                } else {
+                    Swal.fire({ title: 'Opps!', text: 'Vượt quá tồn kho!', icon: 'warning' });
+            }
+        } else if (currentQty > minQty) {
+            updateUI(currentQty - 0.1); 
+        }else if(currentQty == minQty){
+            Swal.fire({ title: 'Opps!', text: 'Tối thiểu 0.2 kg!', icon: 'warning' });
+        }
+    });
 });
 
 //sự kiện nút delete
@@ -151,7 +208,11 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
             if(data.success){
                 row.remove();
                 updateFinalTotal()
-            }else alert('Không thể xóa sản phẩm này!');
+            }else Swal.fire({
+                title: 'Opps!',
+                text: 'Hiện không thể xóa sản phẩm này!',
+                icon: 'warning'
+        });
     
         } catch (err) {
             console.error('Lỗi kết nối:', err);
