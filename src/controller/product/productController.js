@@ -7,9 +7,13 @@ const productController = {
 
     getAllProducts: async (req, res) => {
         try {
+            const page = parseInt(req.query.page) || 1;
+            const limit = 1; 
+            const offset = (page - 1) * limit;
+            const isFetch = req.query.isFetch;
+
             const contract = await getContract();
             const products = await contract.getAllProducts();
-
             const adminAddress = process.env.ADMIN_WALLET;
 
             const [mysqlData] = await db.query('SELECT blockchain_id, price, image_url, description, stock FROM products');
@@ -28,7 +32,28 @@ const productController = {
                     stock: extraInfo ? extraInfo.stock : 0
                 }
             })
-            res.render('product/productList', {list: results, adminAddress: adminAddress}  );
+
+            const paginatedResults = results.slice(offset, offset + limit);
+            const totalPages = Math.ceil(results.length / limit);
+
+            //phân nhánh trả về
+            const renderData = {
+                list: paginatedResults,
+                adminAddress: adminAddress,
+                currentPage: page,
+                totalPages: totalPages
+            };
+            console.log('da vao toi day 1')
+            console.log('check isFetch: ', isFetch)
+            if (isFetch == 'true') {
+                console.log('da vao toi day 2')
+                return res.render('partials/productItems', { 
+                    renderData: renderData, 
+                    layout: false 
+                });
+            }
+
+            res.render('product/productList', {renderData: renderData,  adminAddress: adminAddress}  );
         } catch (error) {
             res.status(500).render('error/error', {
                 status: 500,
