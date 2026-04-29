@@ -1,34 +1,55 @@
-const paginationElem = document.getElementById('pagination-data');
+let currentPage = parseInt(document.getElementById('currentPageDisplay').innerText);
+let totalPages = parseInt(document.getElementById('totalPagesDisplay').innerText);
 
-// Lấy dữ liệu ra (lúc này là chuỗi, cần dùng parseInt)
-let globalCurrentPage = parseInt(paginationElem.dataset.current);
-let globalTotalPages = parseInt(paginationElem.dataset.total);
 async function changePage(step) {
-    // 1. Tính toán trang mục tiêu dựa trên biến global
-    let targetPage = globalCurrentPage + step;
+    const targetPage = currentPage + step;
 
-    // 2. Kiểm tra chặn biên
-    if (targetPage < 1 || targetPage > globalTotalPages) return;
+    if (targetPage < 1 || targetPage > totalPages) return;
+
+    // Hiệu ứng loading cho nút bấm
+    const btn = step === 1 ? document.getElementById('nextBtn') : document.getElementById('prevBtn');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = `<span class="spinner-border spinner-border-sm"></span>`;
+    btn.disabled = true;
 
     try {
-        console.log('da vao toi day!!!')
+        //mặc định get
         const response = await fetch(`/api/products?page=${targetPage}&isFetch=true`);
+        
+        if (!response.ok) throw new Error("Lỗi tải dữ liệu");
+
         const html = await response.text();
 
-        // 3. Cập nhật danh sách sản phẩm
         document.getElementById('product-container').innerHTML = html;
 
-        // 4. CẬP NHẬT TRẠNG THÁI (Quan trọng nhất)
-        globalCurrentPage = targetPage;
-        
-        // Cập nhật số hiển thị trên giao diện
-        document.getElementById('current-page-display').innerText = globalCurrentPage;
+        currentPage = targetPage;
+        document.getElementById('currentPageDisplay').innerText = currentPage;
 
-        // Tùy chỉnh ẩn/hiện nút nếu ở trang đầu/cuối
-        document.getElementById('prevBtn').disabled = (globalCurrentPage === 1);
-        document.getElementById('nextBtn').disabled = (globalCurrentPage === globalTotalPages);
-
+        updateButtonStates();
     } catch (err) {
-        console.error("Lỗi chuyển trang:", err);
+        alert("Có lỗi xảy ra: " + err.message);
+    } finally {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        updateButtonStates();
     }
 }
+
+function scrollToTop() {
+    window.scrollTo({
+        top: 0, 
+        behavior: 'smooth' 
+    });
+}
+
+function updateButtonStates() {
+    document.getElementById('prevBtn').disabled = (currentPage === 1);
+    document.getElementById('nextBtn').disabled = (currentPage === totalPages);
+    
+    // disabled
+    document.getElementById('prevBtnWrapper').classList.toggle('disabled', currentPage === 1);
+    document.getElementById('nextBtnWrapper').classList.toggle('disabled', currentPage === totalPages);
+}
+
+// Gọi lần đầu để set trạng thái nút
+updateButtonStates();

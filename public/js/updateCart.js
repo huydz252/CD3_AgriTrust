@@ -2,9 +2,7 @@
 async function addToCart(productId) {
 
     // check stock trước khi thêm:
-    const minQty = 0.2; // Số lượng mặc định khi mới thêm
-    
-    // Gọi hàm dùng chung
+    const minQty = 0.2;
     const stockStatus = await checkProductStock(productId, minQty);
 
     if (!stockStatus.isAvailable) {

@@ -8,7 +8,7 @@ const productController = {
     getAllProducts: async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 1; 
+            const limit = 2; 
             const offset = (page - 1) * limit;
             const isFetch = req.query.isFetch;
 
