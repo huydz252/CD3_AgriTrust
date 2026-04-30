@@ -1,4 +1,4 @@
-const CONTRACT_ADDRESS = "0x2c7B7840028324F7F672DB39D210F7Dd7dAc3971";
+const CONTRACT_ADDRESS = "0x34F3A6F78Ad35cd4f5Cb288089Cd0745D2fbE38b";
 const CONTRACT_ABI = 
 [
   {
@@ -78,6 +78,19 @@ const CONTRACT_ABI =
     "type": "function"
   },
   {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_newAdmin",
+        "type": "address"
+      }
+    ],
+    "name": "transferAdmin",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "inputs": [],
     "stateMutability": "nonpayable",
     "type": "constructor"
@@ -120,6 +133,11 @@ const CONTRACT_ABI =
             "internalType": "enum RootsTraceability.Status",
             "name": "currentStatus",
             "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
           },
           {
             "internalType": "bool",
@@ -222,6 +240,11 @@ const CONTRACT_ABI =
             "internalType": "enum RootsTraceability.Status",
             "name": "currentStatus",
             "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
           },
           {
             "internalType": "bool",
@@ -341,6 +364,11 @@ const CONTRACT_ABI =
         "type": "uint8"
       },
       {
+        "internalType": "address",
+        "name": "owner",
+        "type": "address"
+      },
+      {
         "internalType": "bool",
         "name": "exists",
         "type": "bool"
@@ -351,10 +379,73 @@ const CONTRACT_ABI =
   }
 ]
 
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('formCreateProduct'); // ID phải khớp với ID trong thẻ <form>
+    
+    if (form) {
+        form.addEventListener('submit', handleAddProduct);
+    }
+});
+
+async function handleAddProduct(event) {
+    event.preventDefault();
+    
+    //data cho hàm createProduct trong contract
+    const id = document.getElementById('productId').value;
+    const name = document.getElementById('productName').value;
+    const origin = document.getElementById('productOrigin').value;
+    const lat = document.getElementById('productLat').value;
+    const lng = document.getElementById('productLng').value;
+    const status =  document.getElementById('productStatus').value; 
+
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const userAddress = accounts[0];
+
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+
+        const tx = await contract.createProduct(
+          BigInt(id),           // Ép kiểu về BigInt cho uint256
+          name, 
+          origin, 
+          lat, 
+          lng, 
+          Number(status),       // Ép kiểu về Number cho uint8/enum
+          {
+              gasPrice: ethers.parseUnits('20', 'gwei'), 
+              gasLimit: 1000000 
+          }
+      );
+        
+        const receipt = await tx.wait(); 
+
+        if (receipt.status === 1) {
+            // giao dịch BC thành công -> Gửi về Server lưu MySQL
+            const formData = new FormData(document.getElementById('formCreateProduct'));
+            console.log('check formdata: ', formData)
+            formData.append('owner_address', userAddress);
+            formData.append('blockchain_confirm', 'success');
+
+            const response = await fetch('/api/createProduct', {
+                method: 'POST',
+                body: formData 
+            });
+
+            if (response.ok) {
+              Swal.fire('Thành công', 'Sản phẩm đã được đưa lên Blockchain và hệ thống!', 'success');
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi:", error);
+        Swal.fire('Thất bại', 'Giao dịch bị từ chối hoặc có lỗi xảy ra', 'error');
+    }
+}
+
 async function updateStageOnChain() {
-  // 1. Lấy dữ liệu từ các thẻ input trong Modal (Nhớ thêm name="lat" và name="lng" vào HTML)
   const id = document.querySelector('input[name="id"]').value;
-  console.log('check id: ', id)
+  // console.log('check id: ', id)
   const status = document.querySelector('select[name="status"]').value;
   const location = document.querySelector('input[name="location"]').value;
   const description = document.querySelector('textarea[name="description"]').value;
@@ -393,22 +484,17 @@ async function updateStageOnChain() {
 
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      
-      // Kết nối Contract
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
 
-      // Gửi giao dịch
       console.log("Đang gửi giao dịch lên Blockchain với tọa độ mới...");
       
-      // CẬP NHẬT: Thêm lat và lng vào lời gọi hàm
-      // Thứ tự tham số trong Contract: _id, _status, _location, _lat, _lng, _description
       const tx = await contract.addStage(
-          Number(id), 
-          Number(status), 
+          BigInt(id), 
+          parseInt(status), 
           location, 
-          lat, // Thêm vĩ độ
-          lng, // Thêm kinh độ
-          description,
+          lat.toString(), // Thêm vĩ độ
+          lng.toString(), // Thêm kinh độ
+          description.toString(),
           {
               gasPrice: ethers.parseUnits('20', 'gwei'), 
               gasLimit: 1000000 
@@ -424,36 +510,16 @@ async function updateStageOnChain() {
 
   } catch (error) {
       console.error("Lỗi giao dịch:", error);
-      
+      const errorReason = error.reason || error.message || "";
       if (error.code === 'ACTION_REJECTED' || error.code === 4001) {
-          alert("Bạn đã từ chối giao dịch.");
+          Swal.fire('Thất bại', 'Giao dịch bị từ chối!', 'warning');
+      }else if (errorReason.includes("caller is not the owner or admin")) {
+          Swal.fire('Quyền truy cập', 'Chỉ Admin hoặc Chủ sở hữu mới có quyền cập nhật giai đoạn này!', 'error');
       } else {
-          alert("Giao dịch thất bại: " + (error.reason || error.message));
+          Swal.fire('Thất bại', 'Giao dịch thất bại, có lỗi xảy ra!', 'error');
       }
       
       btn.disabled = false;
       btn.innerHTML = 'Xác nhận cập nhật';
   }
 }
-
-async function checkRole() {
-    if (window.ethereum) {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send("eth_requestAccounts", []);
-        
-        if (accounts.length > 0) {
-            const currentAccount = accounts[0].toLowerCase();
-            const adminAddr = document.getElementById('adminAddr').value.toLowerCase().trim();
-            
-            //check địa chỉ (f12)
-            console.log("Ví MetaMask:", currentAccount);
-            console.log("Ví Admin từ .env:", adminAddr);
-
-            if (currentAccount === adminAddr) {
-                document.getElementById('btnOpenModal').style.display = 'inline-block';
-            } 
-        }
-    }
-}
-
-window.onload = checkRole;

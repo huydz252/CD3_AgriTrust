@@ -116,14 +116,15 @@
                     </div>
                 </div>
 
-                <% if (user && user.role === 'admin') { %>
-                    <div class="text-center mb-4 no-print">
-                        <button class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalUpdate">
-                            <i class="bi bi-plus-circle-fill me-2"></i> Cập nhật giai đoạn mới
-                        </button>
-                    </div>
+                <% if (user) { %>
+                    <% if (user.role === 'admin' || product.owner_address.toLowerCase() === user.wallet_address.toLowerCase()) { %>
+                        <div class="text-center mb-4 no-print">
+                            <button class="btn btn-primary rounded-pill px-5 py-2 shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#modalUpdate">
+                                <i class="bi bi-plus-circle-fill me-2"></i> Cập nhật giai đoạn mới
+                            </button>
+                        </div>
+                    <% } %> 
                 <% } %> 
-                
                 <div class="card main-card p-4 p-lg-5 bg-white shadow-sm">
                     <h4 class="fw-bold mb-5 text-dark d-flex align-items-center">
                         <i class="bi bi-shield-check-fill text-success fs-2 me-3"></i> 
@@ -239,7 +240,6 @@
         </div>
     </div>
 
-    <input type="hidden" id="adminAddr" value="<%= adminAddress %>">
 
     <% 
     function getStatusName(status) {

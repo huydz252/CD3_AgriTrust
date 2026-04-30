@@ -8,7 +8,7 @@ const productController = {
     getAllProducts: async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 2; 
+            const limit = 3; 
             const offset = (page - 1) * limit;
             const isFetch = req.query.isFetch;
 
@@ -43,8 +43,7 @@ const productController = {
                 currentPage: page,
                 totalPages: totalPages
             };
-            console.log('da vao toi day 1')
-            console.log('check isFetch: ', isFetch)
+
             if (isFetch == 'true') {
                 console.log('da vao toi day 2')
                 return res.render('partials/productItems', { 
@@ -65,18 +64,22 @@ const productController = {
 
     createProduct: async (req, res) => {
         try {
-            const { id, name, origin, status, price, image_url, description, lat, lng} = req.body;
-            const contract = await getContract(); 
-        
-            //blcokchain lưu: id, tên, nguồn gốc, trạng thái khởi tạo, tọa độ khởi tạo
-            const tx = await contract.createProduct(Number(id), name, origin || "Chưa xác định", lat, lng, Number(status));
-            await tx.wait(); 
+            const { id, name, origin, status, price, image_url, description, lat, lng, owner_address} = req.body;
+            
+            if (!id || !name || !owner_address) {
+                return res.status(400).render('error/error', {
+                    status: 400,
+                    message: "Thiếu thông tin quan trọng để lưu sản phẩm!",
+                    error: null
+                });
+            }
+            
             await db.query(
-                'INSERT INTO products (name, price, image_url, description, blockchain_id, latitude, longitude) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [name, price, image_url, description, id, lat, lng]
+                'INSERT INTO products (name, price, image_url, description, blockchain_id, latitude, longitude, owner_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [name, price, image_url, description, parseInt(id), lat, lng, owner_address]
             );
 
-            res.redirect("/api/products");
+            res.redirect("/");
         } catch (error) {
             res.status(500).render('error/error', {
                 status: 500,
@@ -87,70 +90,79 @@ const productController = {
     },
 
     getProductHistory: async (req, res) => {
-    try {
-        const id = req.params.id; 
-        if (isNaN(id)) throw new Error("ID sản phẩm không hợp lệ");
+        try {
+            const id = req.params.id; 
+            if (isNaN(id)) throw new Error("ID sản phẩm không hợp lệ");
 
-        const contract = await getContract();
-        
-        const [history, productDetail, [rows]] = await Promise.all([
-            contract.getHistory(BigInt(id)),
-            contract.getProductDetail(BigInt(id)),
-            db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
-        ]);
-        // console.log('check history: ', history)
-        // console.log('check productDetail: ', productDetail)
-        // console.log('check [rows]: ', [rows])
+            const contract = await getContract();
 
-        //định dạng Timeline từ Blockchain
-        const formattedTimeline = history.map(h => ({
-            status: Number(h.status),
-            location: h.location,
-            latitude: h.latitude,   
-            longitude: h.longitude, 
-            description: h.description,
-            timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'),
-            performer: h.performer
-        }));
+            const [history, productDetail, [rows]] = await Promise.all([
+                contract.getHistory(BigInt(id)),
+                contract.getProductDetail(BigInt(id)),
+                db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
+            ]);
+            
+            console.log('--- TEST TRUY VẤN SÂU ---');
+            console.log('Phần tử đầu tiên:', history[0]?.location);
+            try {
+                const stage2 = await contract.productHistory(idBig, BigInt(1)); 
+                console.log('Stage 2 tồn tại trực tiếp trên mapping:', stage2.location);
+            } catch (e) {
+                console.log('Lỗi: Mapping không có phần tử thứ 2 tại index 1');
+            }
+            
+            // console.log('check productDetail: ', productDetail)
+            // console.log('check [rows]: ', [rows])
 
-        const productFromDb = rows && rows.length > 0 ? rows[0] : null;
+            //định dạng Timeline từ Blockchain
+            const formattedTimeline = history.map(h => ({
+                status: Number(h.status),
+                location: h.location,
+                latitude: h.latitude,   
+                longitude: h.longitude, 
+                description: h.description,
+                timestamp: new Date(Number(h.timestamp) * 1000).toLocaleString('vi-VN'),
+                performer: h.performer
+            }));
 
-        const product = {
-            id: productDetail.id.toString(),
-            name: productDetail.name,
-            origin: productDetail.origin,
-            currentStatus: Number(productDetail.currentStatus),
-            image: productFromDb ? productFromDb.image_url : '/images/system/default.jpg',
-            fullDescription: productFromDb ? productFromDb.description : 'Đang cập nhật dữ liệu...',
-            price: productFromDb ? productFromDb.price : '0',
-            stock: productFromDb ? productFromDb.stock : '0'
-        };
+            const productFromDb = rows && rows.length > 0 ? rows[0] : null;
 
-        // console.log('check formattedTimeline: ', formattedTimeline)
+            const product = {
+                id: productDetail.id.toString(),
+                name: productDetail.name,
+                origin: productDetail.origin,
+                currentStatus: Number(productDetail.currentStatus),
+                image: productFromDb ? productFromDb.image_url : '/images/system/default.jpg',
+                fullDescription: productFromDb ? productFromDb.description : 'Đang cập nhật dữ liệu...',
+                price: productFromDb ? productFromDb.price : '0',
+                stock: productFromDb ? productFromDb.stock : '0',
+                owner_address : productFromDb ? productFromDb.owner_address : ''
+            };
 
-        const adminAddress = process.env.ADMIN_WALLET || "";
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
-        const qrUrl = `${baseUrl}/api/history/${id}`;
-        const qrImage = await QRCode.toDataURL(qrUrl);
+            // console.log('check formattedTimeline: ', formattedTimeline)
 
-        res.render('product/productHistory', { 
-            product: product, 
-            list: formattedTimeline,
-            qrCode: qrImage,
-            adminAddress: adminAddress,
-            isAdmin: true 
-        });
+            const adminAddress = process.env.ADMIN_WALLET || "";
+            const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+            const qrUrl = `${baseUrl}/api/history/${id}`;
+            const qrImage = await QRCode.toDataURL(qrUrl);
 
-    } catch (error) {
-        console.error("Lỗi Controller tại getProductHistory:", error);
-        
-        // Trả về trang lỗi hoặc send text nếu không có view 'error'
-        res.status(500).render('error/error', {
-            status: 500,
-            message: 'Mất kết nối với Server!',
-            error: null
-        });
-    }
+            res.render('product/productHistory', { 
+                product: product, 
+                list: formattedTimeline,
+                qrCode: qrImage,
+                adminAddress: adminAddress,
+                isAdmin: true 
+            });
+
+        } catch (error) {
+            console.error("Lỗi Controller tại getProductHistory:", error);
+            
+            res.status(500).render('error/error', {
+                status: 500,
+                message: 'Mất kết nối với Server!',
+                error: null
+            });
+        }
 },
 
     syncStatusWithMySQL: async (req, res) => {

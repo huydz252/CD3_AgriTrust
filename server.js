@@ -38,6 +38,7 @@ app.use((req, res, next) => {
     next();
 }); 
 
+
 app.use("/api", productRouter);
 app.use("/auth", authRouter);
 app.use("/user", userRouter);

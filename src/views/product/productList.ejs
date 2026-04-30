@@ -58,7 +58,7 @@
     
 
     <!-- modal thêm sản phẩm -->
-    <% if (user && user.role === 'admin') { %>
+    <% if (user && (user.role === 'admin' || user.role === 'owner')) { %>
         <button class="btn btn-success add-btn border-0" data-bs-toggle="modal" data-bs-target="#modalCreate">
             <i class="bi bi-plus-lg"></i>
         </button>
@@ -70,7 +70,7 @@
                     <h4 class="fw-bold text-success">Thêm nông sản mới</h4>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <form action="/api/createProduct" method="POST" id="formCreateProduct">
+                <form id="formCreateProduct">
                     <div class="modal-body p-4">
                         <div class="row g-4">
                             <div class="col-md-6 border-end">
@@ -78,7 +78,7 @@
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small">Mã ID (Blockchain)</label>
-                                        <input type="number" name="id" class="form-control rounded-pill bg-light" placeholder="Ví dụ: 101" required>
+                                        <input type="number" name="id" id="productId" class="form-control rounded-pill bg-light" placeholder="Ví dụ: 101" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small">Giá bán (VNĐ)</label>
@@ -86,7 +86,7 @@
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label fw-bold small">Tên sản phẩm</label>
-                                        <input type="text" name="name" class="form-control rounded-pill" placeholder="Táo Gia Lai..." required>
+                                        <input type="text" id="productName" name="name" class="form-control rounded-pill" placeholder="Táo Gia Lai..." required>
                                     </div>
                                     <div class="col-12">
                                         <label class="form-label fw-bold small">Link hình ảnh</label>
@@ -104,21 +104,21 @@
                                 <div class="row g-3">
                                     <div class="col-12">
                                         <label class="form-label fw-bold small">Nguồn gốc (Địa điểm)</label>
-                                        <input type="text" name="origin" class="form-control rounded-pill" placeholder="Vườn sạch A, Gia Lai">
+                                        <input type="text" id="productOrigin" name="origin" class="form-control rounded-pill" placeholder="Vườn sạch A, Gia Lai">
                                     </div>
                                     
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-primary"><i class="bi bi-geo-alt"></i> Vĩ độ (Lat)</label>
-                                        <input type="text" name="lat" class="form-control rounded-pill border-primary" placeholder="15.5673" required>
+                                        <input type="text" id="productLat" name="lat" class="form-control rounded-pill border-primary" placeholder="15.5673" required>
                                     </div>
                                     <div class="col-md-6">
                                         <label class="form-label fw-bold small text-primary"><i class="bi bi-geo-alt"></i> Kinh độ (Lng)</label>
-                                        <input type="text" name="lng" class="form-control rounded-pill border-primary" placeholder="108.4821" required>
+                                        <input type="text" id="productLng" name="lng" class="form-control rounded-pill border-primary" placeholder="108.4821" required>
                                     </div>
 
                                     <div class="col-12 mt-4">
                                         <label class="form-label fw-bold small text-success">Trạng thái khởi tạo</label>
-                                        <select name="status" class="form-select rounded-pill border-success shadow-sm" required>
+                                        <select id="productStatus" name="status" class="form-select rounded-pill border-success shadow-sm" required>
                                             <option value="0" selected>🌱 Đang trồng / Nuôi dưỡng</option>
                                             <option value="1">🧺 Đã thu hoạch</option>
                                             <option value="2">🚚 Đang vận chuyển</option>
@@ -133,7 +133,7 @@
                     </div>
                     <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
                         <button type="button" class="btn btn-light rounded-pill px-5 mx-2" data-bs-dismiss="modal">Hủy</button>
-                        <button type="submit" class="btn btn-success rounded-pill px-5 mx-2 shadow-sm" id="btnSubmit">
+                        <button class="btn btn-success rounded-pill px-5 mx-2 shadow-sm" id="btnSubmit" >
                             <i class="bi bi-cpu"></i> Ký & Lưu hệ thống
                         </button>
                     </div>
@@ -142,14 +142,19 @@
         </div>
     </div>
 
+
+
     <!-- footer -->
     <%- include('../partials/footer') %>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/sidebar.js"></script> 
     <script src="/js/updateCart.js"></script>
     <script src="/js/productList.js"></script>
+    <script src="/js/web3-handler.js"></script>
+    
     <script>
         const form = document.getElementById('formCreateProduct');
         const btn = document.getElementById('btnSubmit');

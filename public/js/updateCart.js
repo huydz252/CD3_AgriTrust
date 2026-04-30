@@ -126,9 +126,6 @@ function updateFinalTotal() {
     document.getElementById('final-total').innerText = finalTotal.toLocaleString('vi-VN') + 'đ';
 }
 
-//load trang gọi hàm luôn
-updateFinalTotal();
-
 async function updateQtyOnServer(cart_id, newQty) {
     try {
         const response = await fetch('/user/cart/update-quantity', {
