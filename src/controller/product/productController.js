@@ -102,14 +102,14 @@ const productController = {
                 db.query('SELECT * FROM products WHERE blockchain_id = ?', [id])
             ]);
             
-            console.log('--- TEST TRUY VẤN SÂU ---');
-            console.log('Phần tử đầu tiên:', history[0]?.location);
-            try {
-                const stage2 = await contract.productHistory(idBig, BigInt(1)); 
-                console.log('Stage 2 tồn tại trực tiếp trên mapping:', stage2.location);
-            } catch (e) {
-                console.log('Lỗi: Mapping không có phần tử thứ 2 tại index 1');
-            }
+            // console.log('--- TEST TRUY VẤN SÂU ---');
+            // console.log('Phần tử đầu tiên:', history[0]?.location);
+            // try {
+            //     const stage2 = await contract.productHistory(idBig, BigInt(1)); 
+            //     console.log('Stage 2 tồn tại trực tiếp trên mapping:', stage2.location);
+            // } catch (e) {
+            //     console.log('Lỗi: Mapping không có phần tử thứ 2 tại index 1');
+            // }
             
             // console.log('check productDetail: ', productDetail)
             // console.log('check [rows]: ', [rows])

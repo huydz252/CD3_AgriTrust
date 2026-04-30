@@ -153,6 +153,7 @@ document.querySelectorAll('.btn-plus, .btn-minus').forEach(btn => {
         const input = row.querySelector('.input-qty');
         const unitPrice = Number(row.querySelector('.unit-price').dataset.value);
         const productId = row.dataset.product_id;
+        console.log('check product_id: ', productId)
         const minQty = parseFloat(input.min) || 0.2;
         let currentQty = parseFloat(input.value) || minQty;
 

@@ -12,6 +12,8 @@ const cartController = {
             const query = "SELECT cart.*, products.name, products.price, products.stock, products.image_url FROM cart JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?"
             const [cartItems] = await pool.query(query, [userId])
 
+            console.log('check data gửi về cart.ejs: ', cartItems)
+
             const bankConfig = {
                 id: process.env.BANK_ID,
                 account: process.env.BANK_ACCOUNT,

@@ -31,15 +31,18 @@
                                 </thead>
                                 <tbody>
                                     <% cartItems.forEach(item => { %>
+                                        <!-- id là id giỏ hàng, product_id mới là id sản phẩm -->
                                         <tr class="cart-item" data-cart_id = "<%= item.id %>" data-product_id = "<%=item.product_id%>">
                                             <input type="hidden" id="stock" value="<%= item.stock %>">
                                             <td>
                                                 <div class="d-flex align-items-center">
-                                                    <img src="<%= item.image_url %>" class="cart-item-img me-3">
-                                                    <div>
-                                                        <h6 class="mb-0 fw-bold"><%= item.product_name %></h6>
-                                                        <small class="text-muted"><%= item.name %></small>
-                                                    </div>
+                                                    <a href="/api/history/<%=item.product_id%>" class="d-flex align-items-center text-decoration-none text-dark">
+                                                        <img src="<%= item.image_url %>" class="cart-item-img me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                                        <div>
+                                                            <h6 class="mb-0 fw-bold"><%= item.product_name %></h6>
+                                                            <small class="text-muted"><%= item.name %></small>
+                                                        </div>
+                                                    </a>
                                                 </div>
                                             </td>
                                             <td class="unit-price" data-value="<%= item.price %>"><%= (item.price * 1).toLocaleString('vi-VN') %>đ</td>
@@ -176,28 +179,6 @@
         </div>
 
 
-    <!-- sidebar toggle -->
-    </div>
-        <div id="mySidebar" class="sidebar">
-            <div class="sidebar-header">
-                <h3 class="text-white">AgriTrust</h3>
-                <a href="javascript:void(0)" class="closebtn" id="closeSidebar">&times;</a>
-        </div>
-            
-        <div class="sidebar-content">
-            <a href="/"><i class="bi bi-house-door"></i> Trang chủ</a>
-            <a href="/user/cart" class="active"><i class="bi bi-cart-fill"></i> Giỏ hàng</a>
-            <a href="/user/cart/purchased_product"><i class="bi bi-truck"></i> Sản phẩm đang mua</a>
-            <a href="/user/cart/history"><i class="bi bi-bag-check"></i> Sản phẩm đã mua</a>
-            <hr class="text-secondary mx-3"> <a href="/user/cart/statistics"><i class="bi bi-graph-up"></i> Thống kê</a>
-            <a href="/user/profile"><i class="bi bi-person-circle"></i> Profile</a>
-        </div>
-    </div>
-    <div id="main">
-    </div>
-
-    <!-- đóng sidebar -->
-    <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
     <script>
         const bankConfig = {
