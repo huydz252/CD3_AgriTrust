@@ -12,7 +12,7 @@ const ownerController = {
 
         const contract = await getContract();
         const allChainProducts  = await contract.getAllProducts();
-        
+
         const productsWithBlockchainData = myProducts.map(product => {
 
             const chainData = allChainProducts.find(item => item[0].toString() === product.id.toString());
@@ -25,14 +25,14 @@ const ownerController = {
             }
             return { ...product, existsOnChain: false };
         });
-        console.log('check productsWithBlockchainData: ', )
+
         res.render('owner/myProducts', {
             products: productsWithBlockchainData,
             activePage: 'orders'
         });
 
     } catch (error) {
-        console.log('Check error: ', error);
+        console.log('Check ownerController error: ', error);
         res.status(404).render('error/error', { status: 404, message: 'Lỗi truy xuất dữ liệu!' });
     }
 }
