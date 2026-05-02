@@ -33,7 +33,7 @@ const authController = {
         });
     },
 
-    // Middleware kiểm tra quyền admin
+    // Middleware kiểm tra quyền 
     isAdmin: (req, res, next) => {
         if (req.isAuthenticated() && req.user.role === 'admin') {
             return next();
@@ -41,6 +41,23 @@ const authController = {
         res.status(403).render('error/error', {
             status: 403,
             message: 'Truy cập bị từ chối: Bạn không có quyền Admin!',
+            error: null
+        });
+    },
+
+    isOwner: (req, res, next) => {
+        
+        //cho admin đi qua luôn!
+        if (req.isAuthenticated() && req.user.role === 'admin') {
+            return next();
+        }
+
+        if (req.isAuthenticated() && req.user.role === 'owner') {
+            return next();
+        }
+        res.status(403).render('error/error', {
+            status: 403,
+            message: 'Truy cập bị từ chối: Bạn không có quyền Owner!',
             error: null
         });
     }

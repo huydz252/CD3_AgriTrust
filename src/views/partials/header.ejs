@@ -79,6 +79,12 @@
         <hr class="text-secondary mx-3">
         <!-- <a href="/user/cart/statistics"><i class="bi bi-graph-up"></i> Thống kê</a> -->
         <a href="/user/profile"><i class="bi bi-person-circle"></i> Profile</a>
+        
+        <% if (user && user.role === 'owner' || user && user.role === 'admin') { %>
+            <a href="/owner/myProducts">
+                <i class="bi bi-box-seam me-2"></i> Quản lý sản phẩm
+            </a>
+        <% } %>
         <% if (user && user.role === 'admin') { %>
             <a href="/admin/users">
                 <i class="bi bi-people-fill"></i> Quản lý tài khoản
@@ -87,3 +93,5 @@
     </div>
 </div>
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
+
+<script src="/js/sidebar.js"></script>
