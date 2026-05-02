@@ -312,13 +312,13 @@ const cartController = {
         }
     },
 
-    async getHistory(req, res) {
+    async getOrders(req, res) {
         const userId = req.user.id;
         const orders = await pool.query(
             'SELECT * FROM orders WHERE user_id = ? AND status = "completed" ORDER BY created_at DESC', 
             [userId]
         );
-        res.render('user/history', { orders: orders[0], user: req.user });
+        res.render('user/orders', { orders: orders[0], user: req.user });
     },
 
     statistics: async (req, res) => {

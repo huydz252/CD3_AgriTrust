@@ -22,7 +22,7 @@ router.post('/cart/order', authController.isLoggedIn, cartController.order)
 router.get('/cart/purchased_product', authController.isLoggedIn, cartController.purchasedProduct)
 router.get('/cart/purchased_product/detail/:id', authController.isLoggedIn, cartController.orderDetails)
 
-router.get('/cart/history', authController.isLoggedIn, cartController.getHistory)
+router.get('/cart/history', authController.isLoggedIn, cartController.getOrders)
 router.get('/cart/order_detail/:id', authController.isLoggedIn, cartController.orderDetails)
 
 router.get('/cart/statistics', authController.isLoggedIn, cartController.statistics)

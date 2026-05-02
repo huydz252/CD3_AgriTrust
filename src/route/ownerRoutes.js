@@ -5,5 +5,6 @@ const authController = require('../controller/auth/authController');
 const ownerController = require('../controller/owner/ownerController')
 
 router.get('/myProducts', authController.isOwner, ownerController.getMyProducts);
+router.get('/myOrders', authController.isOwner, ownerController.getMyOrders);
 
 module.exports = router;

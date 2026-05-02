@@ -84,6 +84,9 @@
             <a href="/owner/myProducts">
                 <i class="bi bi-box-seam me-2"></i> Quản lý sản phẩm
             </a>
+            <a href="/owner/myOrders">
+                <i class="bi bi-card-checklist me-2"></i> Quản lý đơn hàng
+            </a>
         <% } %>
         <% if (user && user.role === 'admin') { %>
             <a href="/admin/users">
@@ -94,4 +97,3 @@
 </div>
 <div id="sidebarOverlay" class="sidebar-overlay"></div>
 
-<script src="/js/sidebar.js"></script>

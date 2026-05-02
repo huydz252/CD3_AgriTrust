@@ -46,19 +46,14 @@ const authController = {
     },
 
     isOwner: (req, res, next) => {
-        const user = req.user;
-        console.log('check user1: ', user)
-        //cho admin đi qua luôn!
+
         if (req.isAuthenticated() && req.user.role === 'admin') {
             return next();
         }
-        console.log('check user2: ', user)
         if (req.isAuthenticated() && req.user.role === 'owner') {
             return next();
         }
-        console.log('check user3: ', user)
         
-        console.log('check user: ', user)
         res.status(403).render('error/error', {
             status: 403,
             message: 'Truy cập bị từ chối: Bạn không có quyền Owner!',

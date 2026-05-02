@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <%- include('../partials/head') %>
+    <title>Đơn hàng của khách - AgriTrust</title>
+
+    <style>
+        .order-row { cursor: pointer; }
+        .order-row:hover { background-color: #f8f9fa !important; }
+        .product-list-container { background-color: #fafafa; }
+        .product-item { border-left: 3px solid #198754; margin: 10px 20px; background: white; }
+        .product-img-mini {
+            width: 50px !important;  /* Cố định chiều rộng 50px */
+            height: 50px !important; /* Cố định chiều cao 50px */
+            object-fit: cover;       /* Quan trọng: Giúp ảnh không bị méo khi tỷ lệ khác nhau */
+            border-radius: 8px;      /* Bo góc cho đẹp */
+            border: 1px solid #dee2e6; /* Thêm viền nhẹ để tách biệt với nền */
+        }
+    </style>
+
+</head>
+<body class="bg-light">
+    <%- include('../partials/header') %>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <h2 class="h3 mb-4 text-dark"><i class="bi bi-receipt-cutoff text-success me-2"></i>Quản lý đơn hàng</h2>
+
+            <% if (orders && orders.length > 0) { %>
+                <div class="card order-card shadow-sm">
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="ps-4">Mã đơn hàng</th>
+                                    <th>Khách hàng</th>
+                                    <th>Tổng giá trị</th>
+                                    <th>Ngày đặt</th>
+                                    <th class="text-center">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% orders.forEach((order, index) => { %>
+                                    <!-- Dòng thông tin đơn hàng chính -->
+                                    <tr class="order-row" data-bs-toggle="collapse" data-bs-target="#products-<%= index %>">
+                                        <td class="ps-4">
+                                            <span class="fw-bold text-primary"><%= order.order_code %></span>
+                                            <small class="d-block text-muted"><%= order.products.length %> sản phẩm</small>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold"><%= order.buyer_name %></div>
+                                            <small class="text-muted"><%= order.buyer_email %></small>
+                                        </td>
+                                        <td><span class="text-success fw-bold"><%= order.totalAmount.toLocaleString('vi-VN') %> VNĐ</span></td>
+                                        <td><%= new Date(order.created_at).toLocaleDateString('vi-VN') %></td>
+                                        <td class="text-center">
+                                            <button class="btn btn-sm btn-outline-primary rounded-pill">
+                                                <i class="bi bi-chevron-down me-1"></i> Xem chi tiết
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Dòng chứa danh sách sản phẩm (Xổ xuống) -->
+                                    <tr class="collapse product-list-container" id="products-<%= index %>">
+                                        <td colspan="5" class="p-0">
+                                            <div class="py-3">
+                                                <% order.products.forEach(p => { %>
+                                                    <div class="product-item shadow-sm p-3 d-flex align-items-center justify-content-between rounded">
+                                                        <div class="d-flex align-items-center">
+                                                            <img src="<%= p.image_url %>" class="product-img-mini me-3">
+                                                            <div>
+                                                                <div class="fw-bold"><%= p.product_name %></div>
+                                                                <div class="text-muted" style="font-size: 0.85rem;">
+                                                                    <!-- Hiển thị Số lượng x Đơn giá -->
+                                                                    Số lượng: <span class="fw-bold text-dark"><%= p.quantity %></span> 
+                                                                    <span class="mx-1">x</span> 
+                                                                    <%= Number(p.price).toLocaleString('vi-VN') %> VNĐ = <%= (p.quantity * p.price).toLocaleString('vi-VN') %> VNĐ
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="d-flex gap-2">
+                                                            <% if (p.status === 'pending') { %>
+                                                                <button class="btn btn-success btn-sm">
+                                                                    <i class="bi bi-check-circle me-1"></i> Xác nhận đơn
+                                                                </button>
+                                                            <% } else { %>
+                                                                <span class="badge bg-light text-success border border-success px-3">
+                                                                    <i class="bi bi-truck me-1"></i> Đang xử lý
+                                                                </span>
+                                                            <% } %>
+                                                            <a href="/api/products/<%= p.product_id %>" class="btn btn-sm btn-light border">
+                                                                <i class="bi bi-eye"></i>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                <% }) %>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            <% } else { %>
+                <div class="card border-0 shadow-sm py-5 text-center order-card">
+                    <div class="card-body">
+                        <i class="bi bi-inbox-fill text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                        <h4 class="mt-4 text-muted">Chưa có đơn hàng nào</h4>
+                        <p class="text-secondary">Khi khách hàng đặt các nông sản của bạn, đơn hàng sẽ hiển thị tại đây.</p>
+                        <a href="/owner/myProducts" class="btn btn-success mt-2">
+                            <i class="bi bi-arrow-left me-2"></i>Quản lý kho hàng
+                        </a>
+                    </div>
+                    </div>
+            <% } %>
+        </div>
+    </div>
+</div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/sidebar.js"></script>
+</body>
+</html>
