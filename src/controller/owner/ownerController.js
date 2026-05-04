@@ -1,5 +1,6 @@
 const db = require('../../../db'); 
 const getContract = require('../../config/blockchain/blockchain');
+const { ethers } = require('ethers');
 
 const ownerController = {
     
@@ -10,7 +11,7 @@ const ownerController = {
             const walletAddress = userRows[0].wallet_address.toLowerCase();
             const [myProducts] = await db.query('SELECT * FROM products WHERE owner_address = ?', [walletAddress]);
 
-            const contract = await getContract();
+            const { contract, signer } = await getContract();
             const allChainProducts  = await contract.getAllProducts();
 
             const productsWithBlockchainData = myProducts.map(product => {
@@ -69,7 +70,10 @@ const ownerController = {
                 const found = acc.find(item => item.order_code === current.order_code);
                 if (found) {
                     found.products.push(current);
-                    found.totalAmount += Number(current.price );
+                    found.totalAmount += Number(current.price * current.quantity);
+                    if (current.status !== 'completed') {
+                        found.isAllCompleted = false;
+                    }
                 } else {
                     acc.push({
                         order_code: current.order_code,
@@ -77,6 +81,7 @@ const ownerController = {
                         buyer_email: current.buyer_email,
                         created_at: current.created_at,
                         totalAmount: Number(current.price * Number(current.quantity)),
+                        isAllCompleted: current.status === 'completed',
                         products: [current]
                     });
                 }
@@ -84,7 +89,7 @@ const ownerController = {
             }, []);
 
             //console.log('check groupedOrders', groupedOrders);
-            console.log('check groupedOrders', groupedOrders[0].products);
+            console.log('check groupedOrders', groupedOrders);
             res.render('owner/myOrders', {
                 orders: groupedOrders,
                 activePage: 'orders_management',
@@ -127,6 +132,8 @@ const ownerController = {
             const current_stt = req.query.current_stt;
             const cancelled_stt = req.query.cancelled_stt;
 
+            const { contract, signer } = await getContract();
+
             if(!order_id || !pro_id || !current_stt){
                 res.status(404).render('error/error', {
                     status: 404,
@@ -135,32 +142,55 @@ const ownerController = {
                 })
             }
 
-            //hủy đơn = set status = "cancelled" 
-            //note FE: chỉ cho cancelled khi status = pendding
-            // if (cancelled_stt) {
-            //     const query = 'UPDATE order_details SET status = ? WHERE order_id = ? AND product_id = ?';
-            //     const data_query = ['cancelled', order_id, pro_id];
-            //     const updateStatus = await db.query(query, data_query);
-
-            //     //update total_amount
-            //     const old_totalAmound = await db.query(
-            //         'SELECT total_amount FROM orders WHERE id = ?',
-            //         [order_id]
-            //     )
-            //     const updateOders = await db.query(
-            //         'UPDATE order SET total_amount = ? WHERE order_id = ?',
-            //         [order_id]
-            //     )
-                
-            // }
-
-            //update chính!
+            //update status!
             const nextStatus = statusWorkflow[current_stt];
             const nextStatusName = getStatusName[nextStatus] || "Tiếp tục xử lý";
             const query = 'UPDATE order_details SET status = ? WHERE order_id = ? AND product_id = ?';
             const data_query = [nextStatus, order_id, pro_id];
 
             const updateStatus = await db.query(query, data_query);
+
+            // nếu là trạng thái cuối, giải ngân ETH cho owner (payment_method =  METAMASK)
+            let payoutHash = null;
+            if (nextStatus === 'completed') {
+                //thông tin giá tiền và ví của Owner
+                const [productInfo] = await db.query(
+                    `SELECT od.total_price, p.owner_address, o.payment_method 
+                    FROM order_details od 
+                    JOIN products p ON od.product_id = p.id 
+                    JOIN orders o ON od.order_id = o.id
+                    WHERE od.order_id = ? AND od.product_id = ?`, 
+                    [order_id, pro_id]
+                );
+
+                const { total_price, owner_address, payment_method } = productInfo[0];
+
+                //giải ngân
+                if (payment_method === 'METAMASK') {
+                    const ethExchangeRate = Number(process.env.ETH) || 1000000;
+                    const ethAmount = (total_price / ethExchangeRate).toFixed(6);
+                    
+                    const { contract, signer } = await getContract(); 
+                    
+                    try {
+                        console.log("Bắt đầu giải ngân...");
+                        const tx = await signer.sendTransaction({
+                            to: owner_address,
+                            value: ethers.parseEther(ethAmount.toString())
+                        });
+                        
+                        const receipt = await tx.wait();
+                        payoutHash = receipt.hash;
+                        console.log("Giải ngân thành công! Hash:", payoutHash);
+                    } catch (txError) {
+                        console.error("Lỗi khi gửi ETH:", txError);
+                    }
+                }
+            }
+
+            //update trạng thái vào MySQL 
+            const finalUpdateQuery = 'UPDATE order_details SET status = ?, payout_hash = ? WHERE order_id = ? AND product_id = ?';
+            await db.query(finalUpdateQuery, [nextStatus, payoutHash, order_id, pro_id]);
             
             return res.json({ 
                 success: true, 

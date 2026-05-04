@@ -54,7 +54,7 @@ const cartController = {
             });
         }
         const bcId = rows[0].blockchain_id;
-        const contract = await getContract();
+        const { contract, signer } = await getContract();
         const productDetails = await contract.getProductDetail(bcId);
         const currentStatus = Number(productDetails[3]);
         if(currentStatus !== 3){
@@ -180,21 +180,22 @@ const cartController = {
      */
     order: async (req, res) => {
         const userId = req.user.id;
-        const {orderCode, totalAmount, paymentMethod, shippingPhone, shippingAddress, items} = req.body;
+        const {orderCode, totalAmount, paymentMethod, transactionHash, shippingPhone, shippingAddress, items} = req.body;
         const connection = await pool.getConnection()
-        const orderQuery = 'INSERT INTO orders (order_code, user_id, total_amount, payment_method, shipping_phone, shipping_address) VALUES (?,?,?,?,?,?)';
+        const orderQuery = 'INSERT INTO orders (order_code, user_id, total_amount, payment_method, transaction_hash, shipping_phone, shipping_address) VALUES (?,?,?,?,?,?,?)';
         
         try {
             await connection.beginTransaction();
             const [orderResults] = await pool.query(
                 orderQuery, 
-                [orderCode, userId, totalAmount, paymentMethod, shippingPhone, shippingAddress]
+                [orderCode, userId, totalAmount, paymentMethod, transactionHash, shippingPhone, shippingAddress]
             )
             
             //lấy order_id để liên kết với bảng order_results
             const orderId = orderResults.insertId;
 
             if(items && items.length > 0){
+                const defaultStatus = (paymentMethod === 'METAMASK') ? 'confirmed' : 'pending';
                 const orderDertailsQuery = 'INSERT INTO order_details (order_id, product_id, quantity, unit_price, total_price) VALUES ?';
                 const orderDetailValues = items.map(item => [
                     orderId,

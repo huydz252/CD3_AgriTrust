@@ -8,11 +8,11 @@ const productController = {
     getAllProducts: async (req, res) => {
         try {
             const page = parseInt(req.query.page) || 1;
-            const limit = 3; 
+            const limit = 6; 
             const offset = (page - 1) * limit;
             const isFetch = req.query.isFetch;
 
-            const contract = await getContract();
+            const { contract, signer } = await getContract();
             const products = await contract.getAllProducts();
             const adminAddress = process.env.ADMIN_WALLET;
 
@@ -94,7 +94,7 @@ const productController = {
             const id = req.params.id; 
             if (isNaN(id)) throw new Error("ID sản phẩm không hợp lệ");
 
-            const contract = await getContract();
+            const { contract, signer } = await getContract();
 
             const [history, productDetail, [rows]] = await Promise.all([
                 contract.getHistory(BigInt(id)),

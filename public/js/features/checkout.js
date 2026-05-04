@@ -62,6 +62,79 @@ document.getElementById('btn-checkout-cod')?.addEventListener('click', async fun
     
 });
 
+document.getElementById('btn-checkout-metamask')?.addEventListener('click', async function() {
+    const tempTotal = getRawAmount('temp-total');
+    const shipFee = getRawAmount('ship-fee');
+    const finalTotalVND = tempTotal + shipFee;
+
+    //1 ETH = 1.000.000 VNĐ
+    const ethAmount = (finalTotalVND / 1000000).toFixed(6);
+    const adminWallet = "0xa6C0C1cd568B73CfCaBa9c4fCDedE85B26cCCe16"; 
+
+    if (typeof window.ethereum === 'undefined') {
+        return Swal.fire('Thất bại', 'Vui lòng cài đặt MetaMask để thanh toán!', 'error');
+    }
+
+    try {
+        //Yêu cầu kết nối ví
+        const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+        const sender = accounts[0];
+
+        Swal.fire({
+            title: 'Đang xử lý...',
+            text: `Vui lòng xác nhận thanh toán ${ethAmount} ETH trên MetaMask`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        //giao dịch chuyển ETH vào ví Admin
+        const valueInWei = "0x" + (parseFloat(ethAmount) * Math.pow(10, 18)).toString(16);
+        const txHash = await ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: sender,
+                to: adminWallet,
+                value: valueInWei,
+            }],
+        });
+
+        if (txHash) {
+            //giao dịch BC thành công -> Gửi dữ liệu về Server để tạo đơn hàng
+            const orderCode = await getOrderCode();
+            const data = {
+                orderCode: orderCode,
+                shippingPhone: document.getElementById('cod-phone')?.value || "", // Hoặc lấy từ profile nếu chưa mở modal
+                shippingAddress: document.getElementById('cod-address')?.value || "",
+                paymentMethod: 'METAMASK',
+                transactionHash: txHash,
+                totalAmount: finalTotalVND,
+                items: getCartData() 
+            };
+
+            if(!data.shippingPhone || !data.shippingAddress) {
+                return Swal.fire('Thất bại', 'Để dùng tính năng này, vùi lòng vào Profile -> cập nhật số điện thoại và địa chỉ nhận hàng!', 'error');
+            }
+
+            const response = await fetch('/user/cart/order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                if (typeof window.resetOrderCode === 'function') window.resetOrderCode();
+                Swal.fire('Thành công', 'Thanh toán và đặt hàng thành công!', 'success').then(() => {
+                    window.location.href = "/user/cart/purchased_product";
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi MetaMask:", error);
+        Swal.fire('Thất bại', 'Giao dịch bị từ chối hoặc lỗi hệ thống!', 'error');
+    }
+});
+
 function getCartData() {
     const items = [];
     document.querySelectorAll('.cart-item').forEach(row => {

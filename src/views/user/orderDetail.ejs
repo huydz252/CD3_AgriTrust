@@ -83,20 +83,23 @@
                                         <%= Number(item.total_price).toLocaleString('vi-VN') %>đ
                                     </td>
                                     <td class="text-end">
-                                        <%= getStatusName(item.status) %>
+                                        <span class="badge border rounded-pill <%= getStatusBadgeClass(item.status) %> px-3 py-2">
+                                            <i class="bi <%= getStatusIcon(item.status) %> me-1"></i>
+                                            <%= getStatusName(item.status) %>
+                                        </span>
                                     </td>
                                 </tr>
                             <% }) %>
                         </tbody>
-                        <tfoot class="border-top">
+                        <tfoot class="border-top">  
                             <tr>
-                                <td colspan="2" class="text-end pt-3 text-muted">Tổng tiền hàng:</td>
+                                <td colspan="3" class="text-end pt-3 text-muted">Tổng tiền hàng:</td>
                                 <td class="text-end pt-3">
                                     <%= Number(subTotal).toLocaleString('vi-VN') %>đ
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="2" class="text-end text-muted">Phí vận chuyển:</td>
+                                <td colspan="3" class="text-end text-muted">Phí vận chuyển:</td>
                                 <td class="text-end">
                                     <% if (shippingFee === 0) { %>
                                         <span class="text-success fw-bold">Miễn phí</span>
@@ -106,7 +109,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="2" class="text-end fw-bold fs-5 pt-2">Tổng thanh toán:</td>
+                                <td colspan="3" class="text-end fw-bold fs-5 pt-2">Tổng thanh toán:</td>
                                 <td class="text-end fw-bold fs-5 text-success pt-2">
                                     <%= Number(finalTotal).toLocaleString('vi-VN') %>đ
                                 </td>
@@ -129,7 +132,33 @@
                 "cancelled": "Đã hủy"
             };
             return statuses[status] || "Không xác định";
-        }
+        };
+
+        // Function dùng chung để lấy Class màu sắc dựa trên status
+        function getStatusBadgeClass(status) {
+            const statusColors = {
+                "pending": "bg-warning-subtle text-warning border-warning", 
+                "confirmed": "bg-info-subtle text-info border-info",
+                "processing": "bg-primary-subtle text-primary border-primary",
+                "shipped": "bg-success-subtle text-success border-success",
+                "completed": "bg-light text-muted border-secondary",
+                "cancelled": "bg-danger-subtle text-danger border-danger"
+            };
+            return statusColors[status] || "bg-light text-dark border-secondary";
+        };
+
+        // Function dùng chung để lấy Icon tương ứng
+        function getStatusIcon (status) {
+            const icons = {
+                "pending": "bi-clock-history",
+                "confirmed": "bi-check-circle",
+                "processing": "bi-gear-wide-connected",
+                "shipped": "bi-truck",
+                "completed": "bi-check-all",
+                "cancelled": "bi-x-circle"
+            };
+            return icons[status] || "bi-info-circle";
+        };
     %>
 
 

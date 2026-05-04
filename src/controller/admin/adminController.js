@@ -1,5 +1,4 @@
 const db = require('../../../db'); 
-const getContract = require('../../config/blockchain/blockchain');
 const ADMIN_WALLET = process.env.ADMIN_WALLET
 
 const productController = {
