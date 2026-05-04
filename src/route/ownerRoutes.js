@@ -6,5 +6,8 @@ const ownerController = require('../controller/owner/ownerController')
 
 router.get('/myProducts', authController.isOwner, ownerController.getMyProducts);
 router.get('/myOrders', authController.isOwner, ownerController.getMyOrders);
+router.get('/myOrders/updateStatus', authController.isOwner, ownerController.updateStatus);
+
+
 
 module.exports = router;

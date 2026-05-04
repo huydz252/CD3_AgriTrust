@@ -52,6 +52,7 @@ const ownerController = {
                     p.image_url,
                     p.price,
                     od.quantity,
+                    od.status,
                     u.display_name as buyer_name,
                     u.email as buyer_email
                 FROM orders o
@@ -68,20 +69,22 @@ const ownerController = {
                 const found = acc.find(item => item.order_code === current.order_code);
                 if (found) {
                     found.products.push(current);
-                    found.totalAmount += Number(current.price);
+                    found.totalAmount += Number(current.price );
                 } else {
                     acc.push({
                         order_code: current.order_code,
                         buyer_name: current.buyer_name,
                         buyer_email: current.buyer_email,
                         created_at: current.created_at,
-                        totalAmount: Number(current.price),
+                        totalAmount: Number(current.price * Number(current.quantity)),
                         products: [current]
                     });
                 }
                 return acc;
             }, []);
 
+            //console.log('check groupedOrders', groupedOrders);
+            console.log('check groupedOrders', groupedOrders[0].products);
             res.render('owner/myOrders', {
                 orders: groupedOrders,
                 activePage: 'orders_management',
@@ -93,6 +96,85 @@ const ownerController = {
             res.status(500).render('error/error', { 
                 status: 500, 
                 message: 'Không thể tải danh sách đơn hàng!' 
+            });
+        }
+    }, 
+
+    updateStatus : async (req, res) => {
+
+        //danhf cho DB
+        const statusWorkflow = {
+            'pending': 'confirmed',
+            'confirmed': 'processing',
+            'processing': 'shipped',
+            'shipped': 'completed',
+            'completed' : null
+        };
+
+        //dành cho FE
+        const getStatusName = {
+            "pending": "Xác nhận đơn hàng", 
+            "confirmed": "Xác nhận xử lí", 
+            "processing": "Xác nhận giao hàng", 
+            "shipped": "Xác nhận đã giao", 
+            "completed": "Đơn đã hoàn thành rồi!",
+            "cancelled": "Đã hủy"
+        }
+
+        try {
+            const order_id  = req.query.od_id;
+            const pro_id    = req.query.pro_id;
+            const current_stt = req.query.current_stt;
+            const cancelled_stt = req.query.cancelled_stt;
+
+            if(!order_id || !pro_id || !current_stt){
+                res.status(404).render('error/error', {
+                    status: 404,
+                    message: 'Thiếu dữ liệu quan trọng (order_id, pro_id hoặc current_stt)',
+                    error: null
+                })
+            }
+
+            //hủy đơn = set status = "cancelled" 
+            //note FE: chỉ cho cancelled khi status = pendding
+            // if (cancelled_stt) {
+            //     const query = 'UPDATE order_details SET status = ? WHERE order_id = ? AND product_id = ?';
+            //     const data_query = ['cancelled', order_id, pro_id];
+            //     const updateStatus = await db.query(query, data_query);
+
+            //     //update total_amount
+            //     const old_totalAmound = await db.query(
+            //         'SELECT total_amount FROM orders WHERE id = ?',
+            //         [order_id]
+            //     )
+            //     const updateOders = await db.query(
+            //         'UPDATE order SET total_amount = ? WHERE order_id = ?',
+            //         [order_id]
+            //     )
+                
+            // }
+
+            //update chính!
+            const nextStatus = statusWorkflow[current_stt];
+            const nextStatusName = getStatusName[nextStatus] || "Tiếp tục xử lý";
+            const query = 'UPDATE order_details SET status = ? WHERE order_id = ? AND product_id = ?';
+            const data_query = [nextStatus, order_id, pro_id];
+
+            const updateStatus = await db.query(query, data_query);
+            
+            return res.json({ 
+                success: true, 
+                nextStatus: nextStatus, 
+                nextStatusName: nextStatusName,
+                orderId: order_id,   
+                productId: pro_id
+            });
+            
+        } catch (error) {
+            console.log('Lỗi: '. error);
+            return res.json({ 
+                success: false,
+                message: 'Có lỗi! không thể cập nhật'
             });
         }
     }

@@ -1,3 +1,10 @@
+const form = document.getElementById('formCreateProduct');
+const btn = document.getElementById('btnSubmit');
+form.addEventListener('submit', () => {
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang ký Blockchain...';
+    btn.disabled = true;
+});
+
 let currentPage = parseInt(document.getElementById('currentPageDisplay').innerText);
 let totalPages = parseInt(document.getElementById('totalPagesDisplay').innerText);
 

@@ -54,12 +54,7 @@
                     <p class="small mb-1">
                         Hình thức: <strong><%= currentPayment %></strong> 
                     </p>
-                    <p class="small mb-0">
-                        Trạng thái: 
-                        <span class="badge <%= currentStatus.class %>">
-                            <%= currentStatus.text %>
-                        </span>
-                    </p>
+                    
                 </div>
             </div>
 
@@ -71,6 +66,7 @@
                                 <th>Sản phẩm</th>
                                 <th class="text-center">Số lượng</th>
                                 <th class="text-end">Thành tiền</th>
+                                <th class="text-end">Trạng thái</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -85,6 +81,9 @@
                                     <td class="text-center"><%= item.quantity %> kg</td>
                                     <td class="text-end fw-bold">
                                         <%= Number(item.total_price).toLocaleString('vi-VN') %>đ
+                                    </td>
+                                    <td class="text-end">
+                                        <%= getStatusName(item.status) %>
                                     </td>
                                 </tr>
                             <% }) %>
@@ -119,8 +118,22 @@
         </div>
     </div>
 
+    <%
+        function getStatusName(status) {
+            const statuses = {
+                "pending": "Chờ xác nhận", 
+                "confirmed": "Đã xác nhận", 
+                "processing": "Đang chuẩn bị hàng", 
+                "shipped": "Đang được giao", 
+                "completed": "Đã giao",
+                "cancelled": "Đã hủy"
+            };
+            return statuses[status] || "Không xác định";
+        }
+    %>
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/sidebar.js"></script>
+    <script src="/js/ui/sidebar.js"></script>
 </body>
 </html>

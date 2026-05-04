@@ -12,8 +12,6 @@ const cartController = {
             const query = "SELECT cart.*, products.name, products.price, products.stock, products.image_url FROM cart JOIN products ON cart.product_id = products.id WHERE cart.user_id = ?"
             const [cartItems] = await pool.query(query, [userId])
 
-            console.log('check data gửi về cart.ejs: ', cartItems)
-
             const bankConfig = {
                 id: process.env.BANK_ID,
                 account: process.env.BANK_ACCOUNT,
@@ -80,7 +78,7 @@ const cartController = {
             if (rows.length === 0) {
                 await pool.query(
                     'INSERT INTO cart (user_id, product_id, quantity) VALUES (?, ?, ?)',
-                    [userId, productId, 0.2] 
+                    [userId, productId, 0.2, 'pendding'] 
                 );
             } 
 
@@ -178,20 +176,19 @@ const cartController = {
 
 
     /**
-     * khởi tạo lệnh order --> status = pending (chờ)
+     * khởi tạo lệnh order
      */
     order: async (req, res) => {
         const userId = req.user.id;
         const {orderCode, totalAmount, paymentMethod, shippingPhone, shippingAddress, items} = req.body;
         const connection = await pool.getConnection()
-        const orderQuery = 'INSERT INTO orders (order_code, user_id, total_amount, payment_method, status, shipping_phone, shipping_address) VALUES (?,?,?,?,?,?,?)';
-        const orderStatus = (paymentMethod === 'QR') ? 'awaiting_payment' : 'pending';
+        const orderQuery = 'INSERT INTO orders (order_code, user_id, total_amount, payment_method, shipping_phone, shipping_address) VALUES (?,?,?,?,?,?)';
         
         try {
             await connection.beginTransaction();
             const [orderResults] = await pool.query(
                 orderQuery, 
-                [orderCode, userId, totalAmount, paymentMethod, orderStatus, shippingPhone, shippingAddress]
+                [orderCode, userId, totalAmount, paymentMethod, shippingPhone, shippingAddress]
             )
             
             //lấy order_id để liên kết với bảng order_results
@@ -229,12 +226,18 @@ const cartController = {
     purchasedProduct: async (req, res) => {
         try {
             const userId = req.user.id;
-            // Lấy danh sách đơn hàng chưa hoàn thành/hủy
-            const [orders] = await pool.query(
-                `SELECT * FROM orders 
-                WHERE user_id = ? AND status NOT IN ('completed', 'cancelled') 
-                ORDER BY created_at DESC`,
-                [userId]
+            const query = `
+                SELECT * FROM orders 
+                WHERE user_id = ? 
+                AND id IN (
+                    SELECT order_id 
+                    FROM order_details 
+                    WHERE status != 'completed'
+                )
+                ORDER BY created_at DESC
+            `;
+            // Lấy danh sách đơn hàng chưa hoàn thành
+            const [orders] = await pool.query(query, [userId]
             );
             res.render('user/purchasedProduct', {
                 user: req.user,
@@ -267,7 +270,7 @@ const cartController = {
             //lay data don hang 
             const order = orders[0]; 
             const finalTotal = Number(order.total_amount);
-            console.log('check finaltotal ', finalTotal)
+            
             
             let shippingFee = 0;
             let subTotal = 0;
@@ -293,9 +296,11 @@ const cartController = {
                 WHERE od.order_id = ?`, [orderId]
             );
 
+            //console.log('check details: ', details)
+
             res.render('user/orderDetail', {
                 user: req.user,
-                order: order, 
+                order: order,       
                 details: details,
                 subTotal: subTotal,
                 shippingFee: shippingFee,
@@ -312,11 +317,21 @@ const cartController = {
         }
     },
 
-    async getOrders(req, res) {
+    getOrders: async (req, res) => {
         const userId = req.user.id;
-        const orders = await pool.query(
-            'SELECT * FROM orders WHERE user_id = ? AND status = "completed" ORDER BY created_at DESC', 
-            [userId]
+        const query = `
+            SELECT * FROM orders 
+                WHERE user_id = ? 
+                AND id IN (SELECT order_id FROM order_details)  
+                AND id NOT IN (
+                    SELECT order_id 
+                    FROM order_details 
+                    WHERE status != 'completed'
+                )
+                ORDER BY created_at DESC
+            `;
+        
+        const orders = await pool.query(query, [userId]
         );
         res.render('user/orders', { orders: orders[0], user: req.user });
     },
