@@ -55,7 +55,7 @@
                                 </span>
                             </td>
                             <td>
-                                <span class="badge <%= user.role === 'admin' ? 'bg-danger' : 'bg-info text-dark' %>">
+                                <span class="badge <%= user.role === 'admin' ? 'bg-danger' : (user.role === 'owner' ? 'bg-warning' : 'bg-info text-dark') %>">
                                     <%= user.role %>
                                 </span>
                             </td>

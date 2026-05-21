@@ -22,6 +22,7 @@ window.resetOrderCode = function() {
     console.log("Đã reset mã đơn hàng do giỏ hàng thay đổi.");
 };
 
+// -------------- THANH TOÁN QR ----------------
 document.getElementById('btn-checkout-qr')?.addEventListener('click', async function() {
     const tempTotal = getRawAmount('temp-total');
     const shipFee = getRawAmount('ship-fee');
@@ -41,6 +42,7 @@ document.getElementById('btn-checkout-qr')?.addEventListener('click', async func
     myModal.show();
 });
 
+// -------------- THANH TOÁN COD ----------------
 document.getElementById('btn-checkout-cod')?.addEventListener('click', async function() {
    
     try {
@@ -62,6 +64,7 @@ document.getElementById('btn-checkout-cod')?.addEventListener('click', async fun
     
 });
 
+// -------------- THANH TOÁN METAMASK ----------------
 document.getElementById('btn-checkout-metamask')?.addEventListener('click', async function() {
     const tempTotal = getRawAmount('temp-total');
     const shipFee = getRawAmount('ship-fee');

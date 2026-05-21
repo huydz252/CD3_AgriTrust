@@ -38,6 +38,29 @@ const ownerController = {
         }
     },
 
+    updateProductInfo: async (req, res) => {
+        try {
+            const { id, price, stock, description, image_url } = req.body;
+            const ownerId = req.user.id; 
+
+            const query = `
+                UPDATE products 
+                SET price = ?, stock = ?, description = ?, image_url = ? 
+                WHERE id = ? AND owner_address = (SELECT wallet_address FROM users WHERE id = ?)
+            `;
+
+            await db.query(query, [price, stock, description, image_url, id, ownerId]);
+            res.json({ success: true });
+        } catch (error) {
+            console.error(error);
+            res.status(500).render('error/error', { 
+                success: false, 
+                message: 'Lỗi server',
+                error: null
+            });
+        }
+    },
+
     getMyOrders: async (req, res) => {
         try {
             const user = req.user;
@@ -89,7 +112,6 @@ const ownerController = {
             }, []);
 
             //console.log('check groupedOrders', groupedOrders);
-            console.log('check groupedOrders', groupedOrders);
             res.render('owner/myOrders', {
                 orders: groupedOrders,
                 activePage: 'orders_management',
@@ -106,6 +128,11 @@ const ownerController = {
     }, 
 
     updateStatus : async (req, res) => {
+
+        const order_id  = req.query.od_id;
+        const pro_id    = req.query.pro_id;
+        const current_stt = req.query.current_stt;
+        const cancelled_stt = req.query.cancelled_stt;
 
         //danhf cho DB
         const statusWorkflow = {
@@ -126,17 +153,17 @@ const ownerController = {
             "cancelled": "Đã hủy"
         }
 
+        let connection;
         try {
-            const order_id  = req.query.od_id;
-            const pro_id    = req.query.pro_id;
-            const current_stt = req.query.current_stt;
-            const cancelled_stt = req.query.cancelled_stt;
-
+            const connection = await db.getConnection()
+            await connection.beginTransaction();
+            
             const { contract, signer } = await getContract();
 
             if(!order_id || !pro_id || !current_stt){
-                res.status(404).render('error/error', {
-                    status: 404,
+                
+                res.status(400).render('error/error', {
+                    status: 400,
                     message: 'Thiếu dữ liệu quan trọng (order_id, pro_id hoặc current_stt)',
                     error: null
                 })
@@ -148,13 +175,32 @@ const ownerController = {
             const query = 'UPDATE order_details SET status = ? WHERE order_id = ? AND product_id = ?';
             const data_query = [nextStatus, order_id, pro_id];
 
-            const updateStatus = await db.query(query, data_query);
+            const updateStatus = await connection.query(query, data_query);
+
+            //nếu là trạng thái pending->confirmed: trừ quantity
+            if (current_stt === 'pending' && nextStatus === 'confirmed') {
+                const [rows] = await connection.query(
+                    'SELECT od.quantity, p.stock FROM order_details od JOIN products p ON od.product_id = p.id WHERE od.order_id = ? AND od.product_id = ?',
+                    [order_id, pro_id]
+                );
+
+                if (rows.length > 0) {
+                    const { quantity, stock } = rows[0];
+                    if (stock < quantity) {
+                        throw new Error('Số lượng hàng trong kho không đủ để xác nhận đơn hàng!');
+                    }
+                    await connection.query(
+                        'UPDATE products SET stock = stock - ? WHERE id = ?',
+                        [quantity, pro_id]
+                    );
+                }
+            }
 
             // nếu là trạng thái cuối, giải ngân ETH cho owner (payment_method =  METAMASK)
             let payoutHash = null;
             if (nextStatus === 'completed') {
                 //thông tin giá tiền và ví của Owner
-                const [productInfo] = await db.query(
+                const [productInfo] = await connection.query(
                     `SELECT od.total_price, p.owner_address, o.payment_method 
                     FROM order_details od 
                     JOIN products p ON od.product_id = p.id 
@@ -173,7 +219,6 @@ const ownerController = {
                     const { contract, signer } = await getContract(); 
                     
                     try {
-                        console.log("Bắt đầu giải ngân...");
                         const tx = await signer.sendTransaction({
                             to: owner_address,
                             value: ethers.parseEther(ethAmount.toString())
@@ -181,7 +226,6 @@ const ownerController = {
                         
                         const receipt = await tx.wait();
                         payoutHash = receipt.hash;
-                        console.log("Giải ngân thành công! Hash:", payoutHash);
                     } catch (txError) {
                         console.error("Lỗi khi gửi ETH:", txError);
                     }
@@ -190,7 +234,9 @@ const ownerController = {
 
             //update trạng thái vào MySQL 
             const finalUpdateQuery = 'UPDATE order_details SET status = ?, payout_hash = ? WHERE order_id = ? AND product_id = ?';
-            await db.query(finalUpdateQuery, [nextStatus, payoutHash, order_id, pro_id]);
+            await connection.query(finalUpdateQuery, [nextStatus, payoutHash, order_id, pro_id]);
+            await connection.commit();
+
             
             return res.json({ 
                 success: true, 
@@ -201,11 +247,11 @@ const ownerController = {
             });
             
         } catch (error) {
-            console.log('Lỗi: '. error);
-            return res.json({ 
-                success: false,
-                message: 'Có lỗi! không thể cập nhật'
-            });
+            if (connection) await connection.rollback();
+            console.error('Lỗi updateStatus:', error);
+            return res.json({ success: false, message: error.message || 'Cập nhật thất bại' });
+        } finally {
+            if (connection) connection.release(); 
         }
     }
 

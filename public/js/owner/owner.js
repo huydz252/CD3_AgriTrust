@@ -53,3 +53,72 @@ async function updateProductStatus(orderId, productId, currentStatus, event) {
         alert('Lỗi hệ thống, vui lòng thử lại!');
     }
 }
+
+
+// 1. Hàm mở Modal và đổ dữ liệu cũ vào input
+function openEditModal(productStr) {
+    const product = JSON.parse(productStr);
+    
+    document.getElementById('edit-id').value = product.id;
+    document.getElementById('edit-price').value = product.price;
+    document.getElementById('edit-stock').value = product.stock;
+    document.getElementById('edit-description').value = product.description;
+    document.getElementById('edit-image_url').value = product.image_url;
+
+    const editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+    editModal.show();
+}
+
+// edit product 
+document.addEventListener('click', function (event) {
+    const btn = event.target.closest('.btn-edit-product');
+    if (btn) {
+        const product = JSON.parse(btn.getAttribute('data-product'));
+        
+        document.getElementById('edit-id').value = product.id;
+        document.getElementById('edit-price').value = product.price;
+        document.getElementById('edit-stock').value = product.stock;
+        document.getElementById('edit-description').value = product.description;
+        document.getElementById('edit-image_url').value = product.image_url;
+
+        new bootstrap.Modal(document.getElementById('editProductModal')).show();
+    }
+});
+document.getElementById('formEditProduct')?.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSaveEdit');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang lưu...';
+
+    const formData = {
+        id: document.getElementById('edit-id').value,
+        price: document.getElementById('edit-price').value,
+        stock: document.getElementById('edit-stock').value,
+        description: document.getElementById('edit-description').value,
+        image_url: document.getElementById('edit-image_url').value
+    };
+
+    console.log('check form data: ', formData)
+
+    try {
+        const response = await fetch('/owner/myProducts/updateProduct', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            Swal.fire('Thành công', 'Thông tin sản phẩm đã được cập nhật!', 'success')
+                .then(() => window.location.reload());
+        } else {
+            Swal.fire('Lỗi', result.message || 'Không thể cập nhật!', 'error');
+        }
+    } catch (error) {
+        console.log(error);
+        Swal.fire('Lỗi', 'Lỗi kết nối server!', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Lưu thay đổi';
+    }
+});

@@ -45,14 +45,16 @@ const productController = {
             };
 
             if (isFetch == 'true') {
-                console.log('da vao toi day 2')
                 return res.render('partials/productItems', { 
                     renderData: renderData, 
                     layout: false 
                 });
             }
 
-            res.render('product/productList', {renderData: renderData,  adminAddress: adminAddress}  );
+            res.render('product/productList', {
+                renderData: renderData,  
+                adminAddress: adminAddress
+            });
         } catch (error) {
             res.status(500).render('error/error', {
                 status: 500,

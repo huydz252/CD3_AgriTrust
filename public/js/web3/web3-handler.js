@@ -387,6 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+// THÊM SẢN PHẨM MỚI
 async function handleAddProduct(event) {
     event.preventDefault();
     
